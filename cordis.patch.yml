@@ -1,0 +1,6 @@
+# Plugin loader entry: DSH mounts the host half by id + name.
+# Machine-specific launch options (for example chromePath) belong in the
+# profile's cordis.patch.yml, not in the published bundle.
+- insert:
+    - id: dsh-sidepanel-web
+      name: "dsh-sidepanel-web"

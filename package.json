@@ -1,0 +1,61 @@
+{
+  "name": "dsh-sidepanel-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A right-sidebar web panel for DSH Web: browse pages, pick elements and send annotations to the chat.",
+  "icon": "assets/icon.png",
+  "author": "Aleix Rocal",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "assets",
+    "locale",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.1-rc.2 <0.3.0-0"
+  },
+  "scripts": {
+    "smoke": "node test/host-smoke.mjs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AleixRocal/dsh-sidepanel-web"
+  },
+  "homepage": "https://github.com/AleixRocal/dsh-sidepanel-web",
+  "bugs": {
+    "url": "https://github.com/AleixRocal/dsh-sidepanel-web/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "browser",
+    "sidebar",
+    "annotation",
+    "cdp"
+  ]
+}

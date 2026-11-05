@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+
+# Preview harness third-party UMD bundles and artifacts
+test/preview/vendor/
+test/preview/shots/
+test/preview/.chrome-profile/
