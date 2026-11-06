@@ -152,6 +152,23 @@ const server = http.createServer(async (req, res) => {
   if (p === "/api/sidepanel-web/element" && req.method === "POST") {
     return json(res, 200, { ok: true, element: ELEMENT });
   }
+  // A real 1×1 PNG: enough for the client to build a File and for the fake
+  // conversation service to record an image attachment.
+  if (p === "/api/sidepanel-web/crop" && req.method === "POST") {
+    return json(res, 200, {
+      ok: true,
+      file: "/tmp/annotation-crop.png",
+      data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nH0AAAAASUVORK5CYII=",
+      size: { w: 1, h: 1 },
+      tag: "button"
+    });
+  }
+  if (p === "/api/sidepanel-web/annotations" && req.method === "POST") {
+    return json(res, 200, { ok: true, file: "/tmp/annotation.json" });
+  }
+  if (p === "/api/sidepanel-web/mark" && req.method === "POST") {
+    return json(res, 200, { ok: true, n: 1 });
+  }
   if (p === "/api/sidepanel-web/navigate" && req.method === "POST") {
     let body = "";
     for await (const chunk of req) body += chunk;

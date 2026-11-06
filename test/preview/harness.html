@@ -107,8 +107,18 @@
       register(def) { tabDef = def; return () => {}; }
     },
     inject(deps, cb) {
-      // no pasteChip in the harness: the client degrades to plain insertion
-      try { cb({ pasteChip: null, get: () => null }); } catch (e) { console.warn(e); }
+      // No pasteChip in the harness. `conversation` is faked so the crop
+      // attachment path can be exercised end-to-end: createDrafts records the
+      // File objects and returns draft ids for addAttachments.
+      const conversation = {
+        createDrafts(sessionId, files) {
+          window.__draftFiles = files.map((f) => ({ name: f.name, type: f.type, size: f.size }));
+          return files.map((file, i) => ({ id: "fake-draft-" + i, kind: "image", file }));
+        }
+      };
+      try {
+        cb({ pasteChip: null, conversation, get: (name) => (name === "conversation" ? conversation : null) });
+      } catch (e) { console.warn(e); }
     }
   };
   mod.apply(ctx);
@@ -156,7 +166,11 @@
     window.__draft = null;
     ReactDOM.createRoot(writerHost).render(
       React.createElement(writerComp, {
-        inputActions: { setDraft: (v) => { window.__draft = v; } },
+        sessionId: "preview-session",
+        inputActions: {
+          setDraft: (v) => { window.__draft = v; },
+          addAttachments: (ids) => { window.__attached = (window.__attached || []).concat(ids); }
+        },
         useInput: () => ({ draft: "Make the checkout button stand out" })
       })
     );
@@ -167,7 +181,7 @@
     const frame = await waitFor(".ab-frame");
     if (frame) {
       const r = frame.getBoundingClientRect();
-      frame.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: r.left + r.width * 0.62, clientY: r.top + r.height * 0.3 }));
+      frame.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: r.left + r.width * 0.344, clientY: r.top + r.height * 0.399 }));
       const card = await waitFor(".ab-card");
       if (card) {
         const input = card.querySelector(".ab-note");
@@ -177,15 +191,33 @@
         await sleep(120);
         const btn = [...card.querySelectorAll(".ab-btn")].find((b) => /Insert|插入/i.test(b.textContent));
         if (btn) btn.click();
-        await sleep(250);
+        await sleep(500);
       }
     }
     window.__insert = {
       draft: window.__draft,
       cardGone: !document.querySelector(".ab-card"),
       toast: (document.querySelector(".ab-toast") || {}).textContent || null,
-      count: (document.querySelector(".ab-count") || {}).textContent || null
+      count: (document.querySelector(".ab-count") || {}).textContent || null,
+      attached: window.__attached || [],
+      draftFiles: window.__draftFiles || []
     };
+  }
+
+  if (state === "esc") {
+    // Esc must leave annotate mode even when focus is not on the panel root.
+    const toggle = await waitFor(".ab-toggle:not([disabled])");
+    if (toggle) {
+      toggle.click();
+      await sleep(200);
+    }
+    const before = (document.querySelector(".ab-toggle") || {}).getAttribute
+      ? document.querySelector(".ab-toggle").getAttribute("aria-pressed")
+      : null;
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    await sleep(250);
+    const afterEl = document.querySelector(".ab-toggle");
+    window.__esc = { before, after: afterEl ? afterEl.getAttribute("aria-pressed") : null };
   }
 
   if (state === "tall") { /* 只取图，不点选 */ }
@@ -255,7 +287,8 @@
     frame: fr && fr.getBoundingClientRect().toJSON(),
     natural: frameImg ? [frameImg.naturalWidth, frameImg.naturalHeight] : null,
     overflow: stage ? { sw: stage.scrollWidth, cw: stage.clientWidth, sh: stage.scrollHeight, ch: stage.clientHeight } : null,
-    docScroll: { sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight }
+    docScroll: { sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight },
+    esc: window.__esc || null
   };
   document.body.setAttribute("data-ready", "1");
   window.__ready = true;

@@ -87,6 +87,8 @@ It works in both directions:
 - Element pick with selector, text, classes, styles, position, HTML excerpt and page URL.
 - Numbered pins, notes, and a crop captured by selector.
 - Composer hand-off with `InputActions.insertText`, so the draft is not replaced.
+- **The crop rides along as an image.** Annotation crops are attached to the draft, so the composer shows a preview and the sent message carries the image, not just a path.
+- **Esc leaves annotate mode** from the page or the toolbar; an open note card closes first.
 - Device emulation: responsive (fits the panel), desktop 1280×800, laptop 1440×900, tablet 768×1024 (iPad UA), phone 390×844 (iPhone UA) and Android 412×915 — real touch emulation and matching `devicePixelRatio`.
 - English and Spanish UI through `ctx.locale`; other locales fall back to English.
 
@@ -330,6 +332,7 @@ docs/             DSH Web integration research (Catalan)
 ```bash
 npm run check          # node --check on every source file
 npm test               # URL rules + proxy rewrite smoke tests
+npm run test:ui        # Esc + crop-attachment UI regressions (needs Chromium)
 npm run smoke          # host CDP smoke test (needs Chromium)
 npm run mockups        # re-render assets/banner.png and assets/screenshots
 dsh plugin --profile web add link:$PWD
@@ -344,7 +347,7 @@ node test/preview/server.mjs
 # http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-See [`test/preview/README.md`](test/preview/README.md) for every state, the full-window shell and the mockup pipeline.
+See [`test/preview/README.md`](test/preview/README.md) for every state, the full-window shell, the behaviour test and the mockup pipeline.
 
 ## Market
 

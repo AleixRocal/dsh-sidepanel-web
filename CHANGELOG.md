@@ -6,6 +6,16 @@ All notable changes to this project. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Esc did not leave annotate mode in the CDP carrier: the handler was on the
+  panel root, which never has focus while the pointer is over the screencast.
+  It now listens on `window` in capture, and the native overlay forwards Esc
+  from inside the proxied iframe (including after in-page navigation).
+- Annotation crops were saved as a path but not shown in the chat; the composer
+  now receives them as image drafts (`createDrafts` + `addAttachments`) while
+  the text keeps the path for the agent.
+
 ### Documentation
 
 - Rebuilt the README around a banner, status badges, a table of contents,

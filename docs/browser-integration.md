@@ -553,6 +553,38 @@ entre cometes perquè conté `: ` i YAML no la llegeixi com una clau) i la PR
 afegeix `data/plugins/AleixRocal__dsh-sidepanel-web.yml`; el CI del registre valida edat
 del repo, manifest `dsh.bundle`, tema `dsh-plugin`, icona i YAML.
 
+### 7.8 Esc i adjunts d'imatge
+
+**Esc per sortir d'anotació.** El gestor anterior era `onKeyDown` al `.ab-root`, i
+el panell no té el focus quan el punter és sobre el screencast: la tecla no
+arribava mai. Ara:
+
+- portador CDP: `window.addEventListener("keydown", …, true)` mentre el panell és
+  visible i connectat; consumeix Esc abans de la pàgina remota. Si hi ha una
+  targeta de nota, la tanca; si no, desactiva el mode d'anotació.
+- portador natiu: l'overlay de la pàgina proxificada escolta Esc quan el mode és
+  actiu i envia `{kind:"cancel"}` pel `postMessage` existent. Això també
+  funciona després de navegar dins de l'iframe, perquè l'overlay es reinjecta a
+  cada càrrega. El panell també té un listener de finestra per quan el focus és
+  a la barra d'eines.
+
+**La captura viatja amb l'anotació.** El host ja retornava el PNG en base64 a
+`/crop`; abans es descartava i només s'aprofitava el camí. Ara la cua del
+composer porta `{text, image}`:
+
+1. `attachCrop()` guarda `crop` (camí) i `cropImage` (base64, MIME i nom).
+2. El text inclou `· 截图：<camí>` perquè l'agent el pugui llegir.
+3. `DraftWriter` crea un `File` amb `cropFile()` i crida
+   `conversation.createDrafts(sessionId, files)` + `inputActions.addAttachments(ids)`.
+   El composer mostra la miniatura i el missatge enviat porta la imatge.
+4. Sense el servei `conversation` (per exemple, en un entorn antic), la inserció
+   de text segueix funcionant i només s'omet l'adjunt.
+
+Regressió coberta per `test/preview/behavior.mjs` (`npm run test:ui`): arma
+anotació, comprova `aria-pressed` abans/després d'Esc, insereix una anotació i
+verifica que `createDrafts` rep un `File` `image/png` i que arriba un id a
+`addAttachments`.
+
 ---
 
 ## 8. Requisits de navegador (què cal tenir)
@@ -664,6 +696,7 @@ galetes es queden entre reinicis de DSH.
 | Comparar: fragment carregat i estructura KAIS/Inventor visible, 0 errors HTTP | ✅ |
 | `npm test`: regla d'adreces (host + client) i reescriptura del proxy | ✅ |
 | `npm run mockups`: 4 PNG 3200×2000 a `assets/screenshots/` | ✅ |
+| `npm run test:ui`: Esc surt del mode i la captura s'adjunta com a imatge | ✅ |
 | Contingut de les imatges sense dades reals (revisió manual + fixtures) | ✅ |
 
 Pendent de provar dins la GUI real després de refrescar (el host ha de servir

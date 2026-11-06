@@ -48,6 +48,7 @@
     "test": "node test/url-smoke.mjs && node test/proxy-smoke.mjs",
     "test:url": "node test/url-smoke.mjs",
     "test:proxy": "node test/proxy-smoke.mjs",
+    "test:ui": "node test/preview/behavior.mjs",
     "mockups": "node test/preview/mockups.mjs"
   },
   "license": "MIT",

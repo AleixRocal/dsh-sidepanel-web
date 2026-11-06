@@ -86,6 +86,8 @@ Funciona en les dues direccions:
 - Selecció d'element amb selector, text, classes, estils, posició, fragment HTML i URL de la pàgina.
 - Pins numerats, notes i una captura retallada per selector.
 - Lliurament al composer amb `InputActions.insertText`, sense substituir l'esborrany.
+- **La captura viatja com a imatge.** Els retalls de cada anotació s'adjunten a l'esborrany: el composer en mostra la previsualització i el missatge enviat porta la imatge, no només el camí.
+- **Esc surt del mode d'anotació** des de la pàgina o des de la barra; si hi ha una targeta de nota oberta, primer la tanca.
 - Emulació de dispositiu: adaptatiu (s'ajusta al panell), escriptori 1280×800, portàtil 1440×900, tauleta 768×1024 (UA d'iPad), mòbil 390×844 (UA d'iPhone) i Android 412×915 — amb tàctil real i `devicePixelRatio` corresponent.
 - UI en anglès i castellà via `ctx.locale`; altres idiomes cauen a l'anglès.
 
@@ -327,6 +329,7 @@ docs/             recerca de la integració amb DSH Web
 ```bash
 npm run check          # node --check de tots els fitxers font
 npm test               # regles d'URL + proves de reescriptura del proxy
+npm run test:ui        # regressions d'Esc i d'adjunts d'imatge (necessita Chromium)
 npm run smoke          # smoke test del host amb CDP (necessita Chromium)
 npm run mockups        # regenera assets/banner.png i assets/screenshots
 dsh plugin --profile web add link:$PWD
@@ -341,7 +344,7 @@ node test/preview/server.mjs
 # http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-Vegeu [`test/preview/README.md`](test/preview/README.md) per a tots els estats, la shell de finestra completa i el pipeline de mockups.
+Vegeu [`test/preview/README.md`](test/preview/README.md) per a tots els estats, la shell de finestra completa, el test de comportament i el pipeline de mockups.
 
 ## Market
 

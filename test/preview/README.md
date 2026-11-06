@@ -27,7 +27,7 @@ node test/preview/server.mjs
 Query parameters:
 
 - `state`: `ready` `picked` `typing` `insert` `blank` `loading` `error` `shoterr`
-  `tall` `tallpicked` `device`.
+  `tall` `tallpicked` `device` `esc`.
 - `w` / `h`: sidebar width and height. Below 512 the narrow layout is used, 520+
   gets wide padding, 560+ anchors the floating card, 640+ shows the page title.
 - `lang`: `en` (default) or `es`, resolved through the dictionary the client
@@ -47,6 +47,18 @@ Query parameters:
 Everything in these two pages is invented: Northwind Supply is a fictional
 storefront on the reserved `example.com` domain, and no real account, page,
 customer, file path or screenshot of the live GUI is used.
+
+## Behaviour test
+
+```sh
+node test/preview/behavior.mjs
+```
+
+Checks the two regressions that are easy to bring back: **Esc leaves annotate
+mode** (focus is not on the panel root) and **an inserted annotation attaches
+its crop as an image** (`conversation.createDrafts` + `inputActions.addAttachments`,
+not just a path). The mock server serves a 1×1 PNG from `/crop`; the harness
+fakes the conversation service and records the file type and size.
 
 ## Batch screenshots
 
