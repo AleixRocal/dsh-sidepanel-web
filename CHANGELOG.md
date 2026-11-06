@@ -1,0 +1,70 @@
+# Changelog
+
+All notable changes to this project. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.0] — 2026-11-06
+
+### Added
+
+- Address-bar normalisation: `example.com` opens `https://example.com/`;
+  local/dev hosts (`localhost`, `*.local`, private, loopback and link-local
+  addresses) use `http://`; non-web schemes are refused. The same rule is
+  enforced on the host `/navigate` route and covered by `test/url-smoke.mjs`,
+  which also checks the mirrored copy in the client bundle.
+- Public pages are documented as a first-class carrier: any site renders in the
+  host Chromium over CDP, including sites that send `X-Frame-Options`/CSP.
+- Four storefront screenshots in `assets/screenshots/` and `screenshots.json`.
+  They are mockups with invented data (Northwind Supply on `example.com`), not
+  captures of a real session, and are reproducible via `npm run mockups`.
+- Documentation and repository infrastructure: screenshot gallery, updated
+  architecture diagram, `CONTRIBUTING.md`, `SECURITY.md`, issue/PR templates,
+  GitHub Actions CI and Dependabot.
+- Market entry draft for awesome-dsh-plugin (`market/entry.yml`).
+
+### Changed
+
+- README architecture, usage, configuration table and known limitations now
+  describe both carriers and the automatic scheme.
+- `package.json` version, exports (`./url`), package file list and scripts
+  (`test`, `test:url`, `mockups`).
+- Preview harness renders through the client's real EN dictionary instead of
+  raw source strings, and the mock page is a fictional English storefront.
+- Screenshots generated with a 1600×1000 CSS viewport at 2× (3200×2000 PNG).
+
+### Fixed
+
+- Native carrier address bar rejected scheme-less input while the proxy panel
+  handled it; both now canonicalise through one rule.
+- The preview server no longer leaks a device preset between screenshots.
+
+## [0.2.5] — 2026-11-05
+
+### Added
+
+- Device emulation presets (`responsive`, `desktop`, `laptop`, `tablet`,
+  `mobile`, `android`) with touch and DPR, plus `config.device`.
+- `/device` route, `cdpUrl` discovery and a persistent browser profile.
+- Carrier preference per origin and a native ↔ remote switch.
+
+### Fixed
+
+- Proxy rewriting for import maps, `data-src`, `<meta content>` URLs, script
+  `src`, root-relative `fetch`, inline JS, and full proxy paths on link clicks.
+- DSH session cookies are not forwarded to proxied targets.
+- Correct pointer mapping with DPR and downscaled screencasts.
+
+## [0.1.0] — 2026-11-05
+
+### Added
+
+- Initial right-sidebar Browser tab (`kind: "browser"`), annotation overlay,
+  element picks, crops and composer insertion.
+- Host-side Chromium over CDP, launcher discovery, and the first same-origin
+  proxy for local/dev pages.
+- English and Spanish UI.
+
+[0.3.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.2.5...v0.3.0
+[0.2.5]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.1.0...v0.2.5
+[0.1.0]: https://github.com/AleixRocal/dsh-sidepanel-web/releases/tag/v0.1.0
