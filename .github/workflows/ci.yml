@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Syntax and smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate package manifest
+        run: |
+          node -e "const p=require('./package.json'); if(!p.dsh?.bundle?.patch) throw new Error('missing dsh.bundle.patch'); if(!p.dsh?.client) throw new Error('missing dsh.client');"
+          node -e "JSON.parse(require('node:fs').readFileSync('screenshots.json','utf8')).forEach((f)=>{ if(!require('node:fs').existsSync(f)) throw new Error('missing screenshot: '+f); });"
+
+      - name: Syntax checks
+        run: npm run check
+
+      - name: URL and proxy smoke tests
+        run: npm test
+
+      - name: Parse market entry
+        run: |
+          node -e "
+            const fs = require('node:fs');
+            const yaml = fs.readFileSync('market/entry.yml', 'utf8');
+            if (!/url: https:\/\/github\.com\/AleixRocal\/dsh-sidepanel-web/.test(yaml)) throw new Error('market url mismatch');
+            if (!/category: browser/.test(yaml)) throw new Error('market category missing');
+            if (!/icon: https:\/\/raw\.githubusercontent\.com\//.test(yaml)) throw new Error('market icon missing');
+          "

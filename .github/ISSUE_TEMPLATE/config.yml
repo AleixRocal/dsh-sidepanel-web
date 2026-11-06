@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/AleixRocal/dsh-sidepanel-web/security/advisories/new
+    about: Report vulnerabilities privately; do not open a public issue.
+  - name: DSH documentation
+    url: https://github.com/deepseek-ai/deepseek-harness
+    about: Questions about DeepSeek Harness itself, rather than this plugin.

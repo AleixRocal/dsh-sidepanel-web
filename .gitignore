@@ -6,3 +6,7 @@ node_modules/
 test/preview/vendor/
 test/preview/shots/
 test/preview/.chrome-profile/
+
+# Local scratch files (fetched docs, harness logs, PIDs)
+.cache/
+*.tmp

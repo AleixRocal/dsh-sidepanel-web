@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a page, carrier or annotation capability
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep examples fictional (`example.com`) and do not paste real account data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: I want to annotate a page that needs a logged-in session on a public host.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like the panel to do?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Address bar / navigation
+        - Native carrier (proxy)
+        - Remote carrier (CDP)
+        - Annotation and composer
+        - Device emulation
+        - Documentation / market
+        - Other

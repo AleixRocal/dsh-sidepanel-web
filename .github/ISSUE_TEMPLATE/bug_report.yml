@@ -1,0 +1,69 @@
+name: Bug report
+description: Something in the panel or the proxy does not work
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please remove any personal data (real URLs, tokens,
+        cookies, customer names) before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: From the installed package.json or the DSH plugin list.
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: input
+    id: dsh
+    attributes:
+      label: DSH version and profile
+      placeholder: 0.2.1-rc.2 · web
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser used for the CDP carrier
+      placeholder: Chrome 156 (headless) / Chromium 1248
+  - type: dropdown
+    id: carrier
+    attributes:
+      label: Carrier
+      options:
+        - Native (local/dev proxy)
+        - Remote (CDP)
+        - Both / switching
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the Browser tab
+        2. Type example.com
+        3. Click Annotate and pick the header
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include the error text from the panel or the host log, with secrets removed.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: OS, Node version, way the browser was launched, cdpUrl/wsUrl if any
