@@ -1,41 +1,73 @@
-# 面板预览台
+# Panel preview and mockup harness
 
-不启动 DSH、不开真浏览器，也能看到 `lib/client.js` 的完整界面。用 mock 后端造假数据，
-用真实的 `client.js` + React 18 渲染，再用 CDP 截图。
+Renders the real `lib/client.js` with React and a mock backend — no DSH, no real
+browser — so the panel UI can be inspected and screenshotted without touching a
+real session. The screenshots in `assets/screenshots/` are generated from here.
 
-## 一次性准备
+## One-time setup
 
 ```sh
 mkdir -p test/preview/vendor
-# React 18 UMD（不入库）
+# React 18 UMD (not committed)
 cp ~/.dsh/profiles/desktop/node_modules/react/umd/react.development.js test/preview/vendor/
 curl -o test/preview/vendor/react-dom.development.js \
   https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js
 ```
 
-（`react` 那一步如果本机没有 DSH 插件目录，也可以用同一套 unpkg 地址取。）
+If the local DSH desktop profile is not available, fetch `react.development.js`
+from the same unpkg path.
 
-## 看图
+## View the panel
 
 ```sh
 node test/preview/server.mjs
-# 浏览器打开 http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
+# open http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-`state` 取值：`ready` `picked` `typing` `insert` `blank` `loading` `error` `shoterr` `tall` `tallpicked`
-`w`/`h`：侧栏宽度/高度。宽 512 以下走窄栏版式，520 起换宽栏内距，560 起浮卡改为锚定，640 起状态条显示页面标题。
+Query parameters:
 
-## 批量截图（可选）
+- `state`: `ready` `picked` `typing` `insert` `blank` `loading` `error` `shoterr`
+  `tall` `tallpicked` `device`.
+- `w` / `h`: sidebar width and height. Below 512 the narrow layout is used, 520+
+  gets wide padding, 560+ anchors the floating card, 640+ shows the page title.
+- `lang`: `en` (default) or `es`, resolved through the dictionary the client
+  registers with `ctx.locale`.
+- `note`: annotation text used by `picked` / `typing` / `insert`.
+- `chrome=0`: hide the fake host strip, for embedding in `shell.html`.
+- `url`: simulate a chat link arriving as `params.url`.
+
+## Full-window mockups
+
+- `shell.html` — a static DSH Web shell (invented conversation, workspace and
+  session name) with the real panel embedded in an iframe:
+  `http://127.0.0.1:7788/shell.html?shot=hero|annotate|devices&w=760`
+- `diagram.html` — the “how it works” architecture image.
+
+Everything in these two pages is invented: Northwind Supply is a fictional
+storefront on the reserved `example.com` domain, and no real account, page,
+customer, file path or screenshot of the live GUI is used.
+
+## Batch screenshots
 
 ```sh
-node test/preview/shoot.mjs        # → test/preview/shots/*.png
+node test/preview/shoot.mjs     # panel states  → test/preview/shots/*.png (gitignored)
+node test/preview/mockups.mjs   # storefront     → assets/screenshots/*.png (committed)
 ```
 
-需要 node 22+（脚本用全局 `WebSocket`）和本机 Chrome；换路径用 `CHROME_PATH=...`。
-截图脚本会覆盖 `shots/`，两个目录都在 `.gitignore` 里。
+Both need Node 22+ (the CDP client uses the global `WebSocket`) and a local
+Chromium/Chrome. Set `CHROME_PATH` to override the detected binary. The
+Playwright cache path is detected automatically, and both scripts launch Chrome
+with `--no-sandbox` so they also work in containers/CI.
 
-## 已知边界
+`mockups.mjs` starts the preview server itself if it is not already running; it
+writes 1600×1000 CSS pixels at 2× scale (3200×2000 PNG). `ONLY=02 npm run mockups`
+re-renders just the matching images.
 
-- mock 的时间/文案是固定的，不验证真实 CDP 行为；
-- 点击用合成 `MouseEvent`，`?state=picked` 会先点一下「标注」开关再点画面，和真人路径一致；
-- 真实宿主（DSH 侧栏、`conversation.input.dock` 槽位）在这里是替身，界面通过不等于宿主接线通过。
+## Known limits
+
+- Mock data and timestamps are fixed; this does not exercise real CDP behaviour.
+- Clicks are synthetic `MouseEvent`s; `?state=picked` toggles Annotate and clicks
+  the frame the same way a person would.
+- The DSH shell and the `conversation.input.dock` seat are stand-ins here, so a
+  good-looking panel does not prove the host wiring.
+- The mock page and its element are fictional; see `fixture-page*.svg`.

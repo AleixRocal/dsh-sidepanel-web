@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dsh-sidepanel-web · DSH Web panel mockup</title>
+<!--
+  Marketing/documentation mockup. Everything here is invented: a fictional
+  storefront (Northwind Supply), the reserved example.com domain, and a fake
+  conversation. It embeds the real panel (lib/client.js via harness.html) so
+  the browser UI is not a redrawn approximation, while the surrounding DSH Web
+  shell is a static mockup.
+
+  This page is only rendered by test/preview/mockups.mjs -> assets/screenshots.
+-->
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #151517;
+    --layer: #1b1b1c;
+    --layer-2: #232324;
+    --line: #ffffff14;
+    --line-soft: #ffffff0a;
+    --text: #f4f5f7;
+    --text-2: #adb2b8;
+    --text-3: #81858c;
+    --accent: #4f8cff;
+    --accent-soft: #1d2a44;
+    --green: #3fb950;
+    --font: "Inter", "Liberation Sans", "DejaVu Sans", system-ui, sans-serif;
+    --mono: "MesloLGS NF", "Liberation Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.5 var(--font);
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- top bar ---------- */
+  .top {
+    flex: none; height: 48px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 14px 0 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  .mark {
+    width: 24px; height: 24px; border-radius: 7px; flex: none;
+    background: linear-gradient(135deg, #1e3a8a, #0b1220 70%);
+    border: 1px solid #ffffff1f;
+    display: grid; place-items: center;
+  }
+  .brand { font-size: 13px; font-weight: 600; letter-spacing: .1px; white-space: nowrap; }
+  .crumb {
+    display: flex; align-items: center; gap: 6px; margin-left: 4px;
+    color: var(--text-2); font-size: 12px;
+    padding: 4px 8px; border-radius: 7px; border: 1px solid transparent;
+  }
+  .crumb b { color: var(--text); font-weight: 500; }
+  .crumb span.sep { color: var(--text-3); }
+  .spacer { flex: 1; }
+  .chip {
+    display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px;
+    border: 1px solid var(--line); border-radius: 7px;
+    color: var(--text-2); font-size: 11.5px; background: #ffffff05;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .iconbtn {
+    width: 28px; height: 28px; border-radius: 7px; border: 0; background: transparent;
+    color: var(--text-2); display: grid; place-items: center; padding: 0;
+  }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: conic-gradient(from 210deg, #64748b, #334155, #94a3b8, #64748b);
+    border: 1px solid #ffffff26;
+  }
+
+  /* ---------- body ---------- */
+  .main { flex: 1; min-height: 0; display: flex; }
+
+  .rail {
+    flex: none; width: 52px; border-right: 1px solid var(--line-soft);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 0; background: #121214;
+  }
+  .rail .iconbtn { width: 32px; height: 32px; color: var(--text-3); }
+  .rail .iconbtn.active { background: #ffffff0d; color: var(--text); }
+  .rail .iconbtn.bottom { margin-top: auto; }
+
+  .chat {
+    flex: 1; min-width: 0; display: flex; flex-direction: column;
+    background: var(--bg);
+  }
+  .chat-head {
+    flex: none; height: 52px; display: flex; align-items: center; gap: 10px;
+    padding: 0 20px; border-bottom: 1px solid var(--line-soft);
+  }
+  .chat-head h1 { font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap; }
+  .chat-head .sub { color: var(--text-3); font-size: 11.5px; }
+  .chat-head .grow { flex: 1; }
+  .thread {
+    flex: 1; min-height: 0; overflow: hidden;
+    padding: 26px 26px 8px;
+    display: flex; flex-direction: column; justify-content: flex-end; gap: 18px;
+  }
+  .thread-inner { width: 100%; max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  .msg { display: flex; flex-direction: column; gap: 6px; }
+  .who { display: flex; align-items: center; gap: 7px; color: var(--text-3); font-size: 11px; }
+  .who b { color: var(--text-2); font-weight: 500; }
+  .bubble {
+    align-self: flex-end; max-width: 78%;
+    background: var(--layer-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 9px 13px; color: var(--text);
+  }
+  .assistant { color: #dfe3e8; max-width: 94%; }
+  .assistant p { margin: 0 0 7px; }
+  .assistant p:last-child { margin-bottom: 0; }
+
+  .tool {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--line); background: #ffffff05;
+    border-radius: 8px; padding: 6px 9px; color: var(--text-2);
+    font-size: 11.5px; width: fit-content;
+  }
+  .tool code { color: var(--text); font: 11.5px var(--mono); }
+
+  .annotation {
+    border: 1px solid #4f8cff40; background: #4f8cff0d;
+    border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 11px 13px; width: 100%;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .annotation .body { flex: 1; min-width: 0; }
+  .annotation .kicker {
+    font-size: 10px; letter-spacing: .7px; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .annotation .sel { font: 11.5px var(--mono); color: #cfe0ff; margin-bottom: 5px; }
+  .annotation .note { color: var(--text); font-size: 12.5px; }
+  .thumb {
+    width: 92px; height: 56px; flex: none; border-radius: 7px;
+    border: 1px solid var(--line); overflow: hidden; background: #fff;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 33%; display: block; }
+
+  .composer { flex: none; padding: 10px 26px 20px; }
+  .composer-inner {
+    max-width: 720px; margin: 0 auto;
+    border: 1px solid #ffffff1c; background: var(--layer);
+    border-radius: 14px; padding: 12px 12px 9px;
+    box-shadow: 0 10px 30px #0006;
+  }
+  .composer .draft { color: var(--text); font-size: 13px; min-height: 22px; }
+  .composer .draft .caret { display: inline-block; width: 1px; height: 14px; background: var(--accent); vertical-align: -2px; margin-left: 1px; }
+  .composer-row { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+  .composer-row .spacer { flex: 1; }
+  .attach {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 3px 9px; font-size: 11px; color: var(--text-2); background: #ffffff05;
+  }
+  .send {
+    width: 28px; height: 28px; border-radius: 50%; border: 0;
+    background: var(--accent); color: #fff; display: grid; place-items: center;
+  }
+
+  /* ---------- right sidebar ---------- */
+  .side {
+    flex: none; border-left: 1px solid var(--line);
+    background: var(--panel); display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .tabs {
+    flex: none; height: 40px; display: flex; align-items: stretch; gap: 2px;
+    padding: 0 6px; border-bottom: 1px solid var(--line-soft);
+  }
+  .tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 9px; color: var(--text-3); font-size: 11.5px;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tabs .grow { flex: 1; }
+  .tabs .iconbtn { width: 26px; height: 26px; align-self: center; }
+  .frame-wrap { flex: 1; min-height: 0; position: relative; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="mark" aria-hidden="true">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="14" rx="3" stroke="#dbeafe" stroke-width="1.6"/>
+        <path d="M3 8h18" stroke="#dbeafe" stroke-width="1.6"/>
+        <path d="M16.5 11.5c-2.6 0-4.5 1.9-4.5 4.2 0 3 4.5 6.3 4.5 6.3s4.5-3.3 4.5-6.3c0-2.3-1.9-4.2-4.5-4.2Z" fill="#60a5fa"/>
+        <circle cx="16.5" cy="15.8" r="1.4" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="brand">DeepSeek Harness</div>
+    <div class="crumb"><span class="sep">/</span><b>northwind-web</b><span class="sep">/</span>Checkout polish</div>
+    <div class="spacer"></div>
+    <div class="chip"><span class="dot"></span>deepseek-v4.1</div>
+    <button class="iconbtn" aria-label="Search" title="Search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <button class="iconbtn" aria-label="Settings" title="Settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="avatar" aria-hidden="true"></div>
+  </header>
+
+  <div class="main">
+    <aside class="rail">
+      <button class="iconbtn active" title="Chat" aria-label="Chat">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-3.2-6.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 20l1.4-4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+      <button class="iconbtn" title="Files" aria-label="Files">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17V7.5Z" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+      <button class="iconbtn" title="Terminal" aria-label="Terminal">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="m7 9 3 3-3 3M12.5 16h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="iconbtn bottom" title="Settings" aria-label="Settings">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h9M17 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="12" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="17" r="2" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+    </aside>
+
+    <section class="chat">
+      <div class="chat-head">
+        <h1>Checkout polish</h1>
+        <span class="sub">main · 3 files changed</span>
+        <div class="grow"></div>
+        <button class="iconbtn" title="Share" aria-label="Share">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M12 3l-4 4M12 3l4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="iconbtn" title="More" aria-label="More">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+        </button>
+      </div>
+
+      <div class="thread">
+        <div class="thread-inner">
+          <div class="msg">
+            <div class="who" style="justify-content:flex-end"><b>You</b></div>
+            <div class="bubble">The place-order button gets lost when I scroll the checkout on a phone. Can you take a look?</div>
+          </div>
+
+          <div class="msg">
+            <div class="who">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3l1.9 5.3L19 10l-5.1 1.7L12 17l-1.9-5.3L5 10l5.1-1.7L12 3Z" fill="#7aa2ff"/></svg>
+              <b>DeepSeek</b>
+            </div>
+            <div class="assistant">
+              <p>Opening it in the Browser panel so I can see the real layout.</p>
+              <div class="tool">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M4 12h16M12 4c2.5 2.2 2.5 13.8 0 16M12 4c-2.5 2.2-2.5 13.8 0 16" stroke="currentColor" stroke-width="1.3"/></svg>
+                Browser <code>shop.example.com/checkout</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="annotation">
+              <div class="body">
+                <div class="kicker">Annotation 1 · button</div>
+                <div class="sel">#place-order.btn.btn-primary</div>
+                <div class="note">Make the primary action sticky on mobile.</div>
+              </div>
+              <div class="thumb"><img src="/fixture-page.svg" alt="" /></div>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="who">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 3l1.9 5.3L19 10l-5.1 1.7L12 17l-1.9-5.3L5 10l5.1-1.7L12 3Z" fill="#7aa2ff"/></svg>
+              <b>DeepSeek</b>
+            </div>
+            <div class="assistant">
+              <p>Got it — that button is inside the scrolling card. I'll move it to a sticky footer and keep the order total next to it, so the action stays reachable without covering the form.</p>
+            </div>
+          </div>
+
+          <div class="msg">
+            <div class="who" style="justify-content:flex-end"><b>You</b></div>
+            <div class="bubble">Keep the total visible too, not only the button.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="composer-inner">
+          <div class="draft">Sounds good. Make it match the card radius.<span class="caret"></span></div>
+          <div class="composer-row">
+            <button class="iconbtn" title="Attach" aria-label="Attach">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 11.5 12.3 19a4.4 4.4 0 0 1-6.2-6.2l8-8a2.9 2.9 0 0 1 4.1 4.1l-8 8a1.4 1.4 0 0 1-2-2l7.2-7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+            <div class="attach">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M4 12h16" stroke="currentColor" stroke-width="1.5"/></svg>
+              Browser page
+            </div>
+            <div class="spacer"></div>
+            <div class="attach">⌘↵ to send</div>
+            <button class="send" title="Send" aria-label="Send">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M12 5l-6 6M12 5l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side" id="side">
+      <div class="tabs">
+        <div class="tab active">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h16M12 4c2.5 2.2 2.5 13.8 0 16M12 4c-2.5 2.2-2.5 13.8 0 16" stroke="currentColor" stroke-width="1.3"/></svg>
+          Browser
+        </div>
+        <div class="tab">Files</div>
+        <div class="tab">Terminal</div>
+        <div class="grow"></div>
+        <button class="iconbtn" title="Expand" aria-label="Expand">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="iconbtn" title="Close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="frame-wrap"><iframe id="panel" title="Browser panel"></iframe></div>
+    </aside>
+  </div>
+
+<script>
+  const q = new URLSearchParams(location.search);
+  const shot = q.get("shot") || "hero";
+  const note = q.get("note") || "Make the primary action sticky on mobile";
+  const width = Number(q.get("w") || 600);
+  const side = document.getElementById("side");
+  side.style.width = width + "px";
+
+  // States: hero (page only), annotate (pin + note card), devices (phone
+  // emulation with the preset menu open). drivable with ?shot=...
+  const state = shot === "annotate" ? "typing" : shot === "devices" ? "device" : "ready";
+  const frame = document.getElementById("panel");
+  const h = window.innerHeight - 48 - 40;
+  const params = new URLSearchParams({ state, chrome: "0", w: String(width), h: String(h), note, lang: "en" });
+  frame.src = "/harness.html?" + params.toString();
+  frame.addEventListener("load", () => {
+    // Wait for the panel to finish its scripted state, then flag the page so
+    // the screenshot script knows the frame has painted.
+    try {
+      const doc = frame.contentDocument;
+      const done = () => {
+        if (doc.body && doc.body.getAttribute("data-ready") === "1") {
+          document.body.setAttribute("data-ready", "1");
+        } else {
+          setTimeout(done, 80);
+        }
+      };
+      done();
+    } catch (e) {
+      document.body.setAttribute("data-ready", "1");
+    }
+  });
+</script>
+</body>
+</html>

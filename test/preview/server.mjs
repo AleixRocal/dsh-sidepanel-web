@@ -21,21 +21,40 @@ const PORT = Number(process.env.PORT || 7788);
 
 const CLIENT = join(REPO, "lib/client.js");
 const SHOT = join(HERE, "fixture-page.svg");
+const MOBILE = join(HERE, "fixture-page-mobile.svg");
 const TALL = join(HERE, "fixture-page-tall.svg");
 
 let state = "ready";
 let shotCount = 0;
+let devicePreset = "responsive";
+let lastNavigate = "";
+let lastViewport = null;
 
+const DEVICE = {
+  responsive: { preset: "responsive", label: "Adaptive (fits the panel)", width: 0, height: 0, dpr: 1, mobile: false, touch: false },
+  desktop: { preset: "desktop", label: "Desktop 1280×800", width: 1280, height: 800, dpr: 1, mobile: false, touch: false },
+  laptop: { preset: "laptop", label: "Laptop 1440×900", width: 1440, height: 900, dpr: 1, mobile: false, touch: false },
+  tablet: { preset: "tablet", label: "Tablet 768×1024 (iPad)", width: 768, height: 1024, dpr: 2, mobile: true, touch: true },
+  mobile: { preset: "mobile", label: "Phone 390×844 (iPhone)", width: 390, height: 844, dpr: 3, mobile: true, touch: true },
+  android: { preset: "android", label: "Phone 412×915 (Android)", width: 412, height: 915, dpr: 2.625, mobile: true, touch: true }
+};
+
+function deviceState() {
+  return DEVICE[devicePreset] || DEVICE.responsive;
+}
+
+// Fictional page and element. `example.com` is reserved by the IETF for
+// documentation, so nothing here can point at a real account or customer.
 const PAGE = {
-  url: "https://checkout.example.com/pay/confirm?order=20261023A7",
-  title: "确认订单 - 示例商城"
+  url: "https://shop.example.com/checkout",
+  title: "Checkout · Northwind Supply"
 };
 
 const ELEMENT = {
   tag: "BUTTON",
-  id: "submit",
+  id: "place-order",
   cls: "btn btn-primary btn-block",
-  text: "确认支付 ￥ 1,280.00",
+  text: "Place order · €152.00",
   rect: { x: 152, y: 536, w: 576, h: 44 },
   pageUrl: PAGE.url,
   pageTitle: PAGE.title,
@@ -66,7 +85,7 @@ function sendImage(res, file) {
 function sendFile(res, path, type) {
   if (!existsSync(path)) {
     res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
-    res.end(`缺少 ${path}\n见 test/preview/README.md 的 vendor 说明`);
+    res.end(`missing ${path}\nsee test/preview/README.md for the vendor setup\n`);
     return;
   }
   const body = readFileSync(path);
@@ -81,6 +100,11 @@ const server = http.createServer(async (req, res) => {
   if (p === "/__state") {
     state = u.searchParams.get("value") || "ready";
     shotCount = 0;
+    // Each harness load starts from a clean session: device emulation is
+    // session-scoped in the real host, and a leftover preset would leak from
+    // one screenshot into the next.
+    devicePreset = "responsive";
+    lastViewport = null;
     return json(res, 200, { ok: true, state });
   }
 
@@ -89,6 +113,8 @@ const server = http.createServer(async (req, res) => {
     const base = {
       wsUrl: "ws://127.0.0.1:9222/devtools/browser/preview",
       info: { endpoint: "ws://127.0.0.1:9222/devtools/browser/preview", launched: null, lastError: "" },
+      device: deviceState(),
+      viewport: lastViewport || { w: 360, h: 700, dpr: 1 },
       config
     };
     if (state === "loading") return; // 永不返回：模拟首次拉起 Chrome
@@ -97,7 +123,7 @@ const server = http.createServer(async (req, res) => {
         ...base,
         ok: false,
         page: null,
-        lastError: "CDP 连接失败: ws://127.0.0.1:9222/devtools/browser/preview (ECONNREFUSED)"
+        lastError: "CDP connect failed: ws://127.0.0.1:9222/devtools/browser/preview (ECONNREFUSED)"
       });
     }
     if (state === "blank") {
@@ -109,12 +135,17 @@ const server = http.createServer(async (req, res) => {
   if (p === "/api/sidepanel-web/shot") {
     shotCount += 1;
     if (state === "shoterr" && shotCount > 1) {
-      return json(res, 503, { ok: false, error: "CDP 调用超时: Page.captureScreenshot" });
+      return json(res, 503, { ok: false, error: "CDP timeout: Page.captureScreenshot" });
     }
     if (state === "loading" || state === "error") {
-      return json(res, 503, { ok: false, error: "没有可用的页面" });
+      return json(res, 503, { ok: false, error: "No page available" });
     }
     if (state === "tall" || state === "tallpicked") return sendImage(res, TALL);
+    // Device emulation changes the viewport; serve the matching page size so
+    // the preview shows what the preset actually renders.
+    if (devicePreset === "mobile" || devicePreset === "android" || devicePreset === "tablet") {
+      return sendImage(res, MOBILE);
+    }
     return sendImage(res);
   }
 
@@ -122,7 +153,32 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { ok: true, element: ELEMENT });
   }
   if (p === "/api/sidepanel-web/navigate" && req.method === "POST") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    try { lastNavigate = JSON.parse(body || "{}").url || ""; } catch {}
     return json(res, 200, { ok: true, page: PAGE });
+  }
+  if (p === "/__last") return json(res, 200, { navigate: lastNavigate, device: deviceState() });
+  if (p === "/api/sidepanel-web/device" && req.method === "POST") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    const next = JSON.parse(body || "{}").preset || "responsive";
+    if (!DEVICE[next]) return json(res, 400, { ok: false, error: "unknown preset: " + next });
+    devicePreset = next;
+    return json(res, 200, { ok: true, device: deviceState() });
+  }
+  if (p === "/api/sidepanel-web/viewport" && req.method === "POST") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    const parsed = JSON.parse(body || "{}");
+    // Mirror the emulated viewport into the status reply, otherwise the panel
+    // keeps reporting the old size and the stage aspect drifts.
+    const w = Number(parsed.width || parsed.w || 0);
+    const h = Number(parsed.height || parsed.h || 0);
+    if (w > 0 && h > 0) {
+      lastViewport = { w, h, dpr: Number(parsed.deviceScaleFactor || parsed.dpr || 1) };
+    }
+    return json(res, 200, { ok: true, ...parsed });
   }
   if (p === "/api/sidepanel-web/nav" && req.method === "POST") {
     return json(res, 200, { ok: true, moved: true, url: PAGE.url });
@@ -132,6 +188,10 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (p === "/harness.html") return sendFile(res, join(HERE, "harness.html"), "text/html; charset=utf-8");
+  if (p === "/shell.html") return sendFile(res, join(HERE, "shell.html"), "text/html; charset=utf-8");
+  if (p === "/diagram.html") return sendFile(res, join(HERE, "diagram.html"), "text/html; charset=utf-8");
+  if (p === "/fixture-page.svg") return sendFile(res, SHOT, "image/svg+xml");
+  if (p === "/fixture-page-mobile.svg") return sendFile(res, MOBILE, "image/svg+xml");
   if (p === "/client.js") return sendFile(res, CLIENT, "application/javascript; charset=utf-8");
   if (p === "/vendor/react.js") {
     return sendFile(res, join(VENDOR, "react.development.js"), "application/javascript; charset=utf-8");

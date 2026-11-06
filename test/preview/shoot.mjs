@@ -12,7 +12,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 const CHROME =
   process.env.CHROME_PATH ||
-  ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium"].find((p) => existsSync(p)) ||
+  [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`
+  ].find((p) => existsSync(p)) ||
   "google-chrome";
 const PORT = 9333;
 const OUT = join(HERE, "shots");
@@ -43,6 +48,9 @@ async function main() {
     CHROME,
     [
       "--headless=new",
+      // Containers and CI runners without user namespaces cannot use Chrome's
+      // sandbox; this harness only renders local fixture pages.
+      "--no-sandbox",
       `--remote-debugging-port=${PORT}`,
       `--user-data-dir=${join(HERE, ".chrome-profile")}`,
       "--no-first-run",

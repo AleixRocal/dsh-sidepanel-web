@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>dsh-sidepanel-web · how it works</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #151517;
+    --layer: #1c1c1f;
+    --layer-2: #232327;
+    --line: #ffffff1a;
+    --text: #f4f5f7;
+    --text-2: #adb2b8;
+    --text-3: #81858c;
+    --blue: #5b8cff;
+    --blue-soft: #5b8cff1f;
+    --green: #3fb950;
+    --green-soft: #3fb9501f;
+    --amber: #d29922;
+    --amber-soft: #d299221f;
+    --violet: #a78bfa;
+    --font: "Inter", "Liberation Sans", "DejaVu Sans", system-ui, sans-serif;
+    --mono: "MesloLGS NF", "Liberation Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1600px; height: 1000px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(1100px 520px at 12% -10%, #1b2540 0%, transparent 62%),
+      radial-gradient(900px 500px at 50% 110%, #1a2620 0%, transparent 58%),
+      var(--bg);
+    color: var(--text);
+    font: 15px/1.5 var(--font);
+    padding: 0 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 40px; }
+  .mark {
+    width: 46px; height: 46px; border-radius: 12px; flex: none;
+    background: linear-gradient(135deg, #1e3a8a, #0b1220 70%);
+    border: 1px solid #ffffff26; display: grid; place-items: center;
+    box-shadow: 0 10px 24px #0007;
+  }
+  h1 { margin: 0 0 4px; font-size: 27px; letter-spacing: -.3px; font-weight: 600; }
+  .sub { color: var(--text-2); font-size: 14px; }
+  .sub code { font: 13px var(--mono); color: #cfe0ff; background: #ffffff0a; padding: 1px 6px; border-radius: 5px; }
+
+  .lane {
+    display: grid; grid-template-columns: 250px 46px 290px 46px 250px 46px 300px;
+    align-items: stretch; gap: 0; margin-bottom: 24px;
+  }
+  .node {
+    background: linear-gradient(180deg, #1e1e22, #17171a);
+    border: 1px solid var(--line); border-radius: 13px;
+    padding: 20px 20px; display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 12px 28px #0004;
+  }
+  .node .tag {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-3); font-weight: 600;
+  }
+  .node .title { font-size: 16px; font-weight: 600; }
+  .node .desc { font-size: 12.5px; color: var(--text-2); }
+  .node code { font: 12px var(--mono); color: #dbe4f3; }
+  .node.local { border-color: #3fb95045; }
+  .node.local .tag { color: #7ee787; }
+  .node.public { border-color: #5b8cff45; }
+  .node.public .tag { color: #9db8ff; }
+  .node.panel { border-color: #a78bfa40; }
+  .node.panel .tag { color: #c4b5fd; }
+  .node.target { border-color: #ffffff30; background: linear-gradient(180deg, #202227, #17181b); }
+
+  .arrow { display: flex; align-items: center; justify-content: center; color: #5c6370; font-size: 20px; }
+  .arrow span { display: block; }
+
+  .badge {
+    margin-top: 6px; width: fit-content; font-size: 10.5px; letter-spacing: .3px;
+    padding: 2px 7px; border-radius: 999px; border: 1px solid #ffffff1f; color: var(--text-2);
+  }
+  .badge.green { color: #7ee787; border-color: #3fb95045; background: #3fb95010; }
+  .badge.blue { color: #9db8ff; border-color: #5b8cff45; background: #5b8cff10; }
+
+  .annotate {
+    margin-top: 18px; border: 1px solid #d2992235; background: linear-gradient(180deg, #221d10, #17150f);
+    border-radius: 14px; padding: 24px 26px; display: grid;
+    grid-template-columns: 300px 40px 1fr; align-items: center; gap: 0;
+  }
+  .annotate .label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #e3b341; font-weight: 600; }
+  .annotate .title { font-size: 16px; font-weight: 600; margin-top: 3px; }
+  .annotate .desc { font-size: 12.5px; color: var(--text-2); margin-top: 3px; }
+  .payload {
+    display: flex; flex-direction: column; gap: 8px;
+    font: 12.5px var(--mono); color: #e6edf3;
+  }
+  .payload .row { display: flex; gap: 10px; align-items: center; }
+  .payload .idx {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--blue);
+    color: #fff; font: 600 11px var(--font); display: grid; place-items: center; flex: none;
+  }
+  .payload .sel { color: #cfe0ff; }
+  .payload .note { color: var(--text-2); font-family: var(--font); font-size: 13px; }
+  .payload .to { margin-left: auto; color: var(--text-3); font: 11px var(--font); }
+  .arrow-small { color: #8a6d2a; font-size: 20px; text-align: center; }
+
+  .foot {
+    margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap;
+    color: var(--text-3); font-size: 12px;
+  }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; background: #ffffff06; }
+  .pill b { color: var(--text-2); font-weight: 500; }
+  .receipt {
+    margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--line); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden;
+  }
+  .receipt .cell {
+    background: #141417; padding: 9px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .receipt .k {
+    font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .receipt code { font: 11.5px var(--mono); color: #c9d4e4; }
+  .disclaimer { margin-top: 10px; color: #6f747c; font-size: 11px; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="mark" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="4" width="18" height="14" rx="3" stroke="#dbeafe" stroke-width="1.5"/>
+        <path d="M3 8h18" stroke="#dbeafe" stroke-width="1.5"/>
+        <path d="M16.5 11.5c-2.6 0-4.5 1.9-4.5 4.2 0 3 4.5 6.3 4.5 6.3s4.5-3.3 4.5-6.3c0-2.3-1.9-4.2-4.5-4.2Z" fill="#60a5fa"/>
+        <circle cx="16.5" cy="15.8" r="1.4" fill="#fff"/>
+      </svg>
+    </div>
+    <div>
+      <h1>How dsh-sidepanel-web works</h1>
+      <div class="sub">A browser in the DSH right sidebar. Two carriers, one annotation path: <code>element → note → chat</code>.</div>
+    </div>
+  </div>
+
+  <!-- local / dev lane -->
+  <div class="lane">
+    <div class="node local">
+      <span class="tag">Local / dev URL</span>
+      <span class="title">shop.local:5173</span>
+      <span class="desc">Scheme added for you: <code>http://</code></span>
+      <span class="badge green">never https-guessed</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node local">
+      <span class="tag">Carrier A · native</span>
+      <span class="title">Same-origin proxy</span>
+      <span class="desc">Rewrites HTML, CSS, JS, import maps and API calls so the page runs inside DSH.</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node local">
+      <span class="tag">In the sidebar</span>
+      <span class="title">Real iframe</span>
+      <span class="desc">The app keeps its JavaScript, cookies and self-signed certs. The overlay can read its DOM.</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node target">
+      <span class="tag">Same panel</span>
+      <span class="title">Pick → note → insert</span>
+      <span class="desc">Selector, text, styles, size, screenshot and page URL land in the composer.</span>
+    </div>
+  </div>
+
+  <!-- public lane -->
+  <div class="lane">
+    <div class="node public">
+      <span class="tag">Any web URL</span>
+      <span class="title">example.com/pricing</span>
+      <span class="desc">Scheme added for you: <code>https://</code></span>
+      <span class="badge blue">https by default</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node public">
+      <span class="tag">Carrier B · remote</span>
+      <span class="title">CDP Chromium</span>
+      <span class="desc">A real browser on the host: own profile, cookies, tabs, clicking and typing.</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node public">
+      <span class="tag">In the sidebar</span>
+      <span class="title">Screencast frames</span>
+      <span class="desc">X-Frame-Options and CSP stop framing, not this carrier. Clicks and wheels are forwarded.</span>
+    </div>
+    <div class="arrow"><span>→</span></div>
+    <div class="node target">
+      <span class="tag">Same panel</span>
+      <span class="title">Device emulation</span>
+      <span class="desc">Responsive, desktop, laptop, tablet, iPhone and Android with touch and DPR.</span>
+    </div>
+  </div>
+
+  <!-- annotation path -->
+  <div class="annotate">
+    <div>
+      <div class="label">Third piece · annotation</div>
+      <div class="title">The page becomes a message</div>
+      <div class="desc">Pick an element, write the note. The payload goes into the draft without replacing it.</div>
+    </div>
+    <div class="arrow-small">→</div>
+    <div class="payload">
+      <div class="row"><span class="idx">1</span><span class="sel">button#place-order.btn-primary</span><span class="to">from the sidebar</span></div>
+      <div class="row"><span class="idx" style="background:#3fb950">✓</span><span class="note">Make the primary action sticky on mobile.</span><span class="to">note + crop attached</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="pill"><b>Address bar:</b> https:// is added automatically</div>
+    <div class="pill"><b>Carriers:</b> switch per site, remembered</div>
+    <div class="pill"><b>Browser:</b> bring your own via <b>cdpUrl</b></div>
+    <div class="pill"><b>Works:</b> DSH Web profile</div>
+  </div>
+
+  <div class="receipt">
+    <div class="cell"><span class="k">Selector</span><code>button#place-order.btn-primary</code></div>
+    <div class="cell"><span class="k">Size</span><code>576 × 44 @ (152, 536)</code></div>
+    <div class="cell"><span class="k">Styles</span><code>display: inline-block · radius 10px</code></div>
+    <div class="cell"><span class="k">Screenshot</span><code>crop-1-place-order.png</code></div>
+  </div>
+
+  <div class="disclaimer">Mockup for documentation. No real account, page or customer data is shown.</div>
+  <script>document.body.setAttribute("data-ready", "1");</script>
+</body>
+</html>

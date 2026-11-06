@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="844" viewBox="0 0 390 844" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <!-- Mobile version of the fictional Northwind Supply checkout. -->
+  <rect width="390" height="844" fill="#f6f4ef"/>
+  <rect width="390" height="56" fill="#fffdf9"/>
+  <line x1="0" y1="56" x2="390" y2="56" stroke="#e6e1d8"/>
+  <rect x="20" y="16" width="24" height="24" rx="7" fill="#1f3d33"/>
+  <path d="M26 29 l6 -7 6 7" fill="none" stroke="#f6f4ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="52" y="34" font-size="15" font-weight="600" fill="#14110e">Northwind Supply</text>
+  <text x="370" y="34" font-size="12" text-anchor="end" fill="#14110e">Cart · 2</text>
+
+  <text x="20" y="92" font-size="20" font-weight="600" fill="#14110e">Checkout</text>
+  <text x="20" y="114" font-size="12" fill="#6b655c">18 Example Street, Sample City</text>
+
+  <rect x="20" y="132" width="350" height="88" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <rect x="36" y="148" width="56" height="56" rx="8" fill="#e9e3d8"/>
+  <path d="M50 192 l14 -30 14 30 z" fill="#1f3d33" opacity=".75"/>
+  <text x="108" y="172" font-size="14" fill="#14110e">Trail Jacket</text>
+  <text x="108" y="192" font-size="12" fill="#6b655c">Moss / M</text>
+  <text x="354" y="172" font-size="14" text-anchor="end" fill="#14110e">€124.00</text>
+
+  <rect x="20" y="232" width="350" height="76" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <rect x="36" y="246" width="44" height="44" rx="8" fill="#e9e3d8"/>
+  <circle cx="58" cy="268" r="10" fill="#1f3d33" opacity=".7"/>
+  <text x="96" y="266" font-size="14" fill="#14110e">Everyday Cap</text>
+  <text x="96" y="286" font-size="12" fill="#6b655c">Sand / One size</text>
+  <text x="354" y="270" font-size="14" text-anchor="end" fill="#14110e">€28.00</text>
+
+  <rect x="20" y="324" width="350" height="128" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="36" y="352" font-size="12" fill="#6b655c">Subtotal</text>
+  <text x="354" y="352" font-size="12" text-anchor="end" fill="#14110e">€152.00</text>
+  <text x="36" y="378" font-size="12" fill="#6b655c">Shipping</text>
+  <text x="354" y="378" font-size="12" text-anchor="end" fill="#2f5d50">Free</text>
+  <line x1="36" y1="396" x2="354" y2="396" stroke="#efeae1"/>
+  <text x="36" y="424" font-size="14" font-weight="600" fill="#14110e">Total</text>
+  <text x="354" y="424" font-size="14" font-weight="600" text-anchor="end" fill="#14110e">€152.00</text>
+
+  <text x="20" y="488" font-size="12" fill="#6b655c">Arrives Tue 10 Nov · Visa ending 4242</text>
+  <text x="20" y="508" font-size="11" fill="#a19a8e">Sample checkout · not a real order.</text>
+
+  <rect x="20" y="756" width="350" height="48" rx="10" fill="#1f3d33"/>
+  <text x="195" y="786" font-size="15" font-weight="600" text-anchor="middle" fill="#f6f4ef">Place order · €152.00</text>
+  <text x="195" y="826" font-size="10" text-anchor="middle" fill="#a19a8e">Fictional storefront for documentation</text>
+</svg>

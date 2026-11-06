@@ -1,21 +1,22 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.3.0",
   "type": "module",
-  "description": "A right-sidebar web panel for DSH Web: browse pages, pick elements and send annotations to the chat.",
+  "description": "Right-sidebar browser for DeepSeek Harness Web: any public site through CDP, local/dev pages through a same-origin proxy, device emulation, and element picks that become chat annotations.",
   "icon": "assets/icon.png",
   "author": "Aleix Rocal",
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
+    "./url": "./lib/url.js",
     "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "assets",
-    "locale",
     "cordis.patch.yml",
+    "screenshots.json",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
@@ -38,24 +39,36 @@
     "dsh": ">=0.2.1-rc.2 <0.3.0-0"
   },
   "scripts": {
-    "smoke": "node test/host-smoke.mjs"
+    "smoke": "node test/host-smoke.mjs",
+    "check": "node --check lib/index.js && node --check lib/client.js && node --check lib/page.js && node --check lib/proxy.js && node --check lib/service.js && node --check lib/cdp.js && node --check lib/launcher.js && node --check lib/url.js",
+    "test": "node test/url-smoke.mjs && node test/proxy-smoke.mjs",
+    "test:url": "node test/url-smoke.mjs",
+    "test:proxy": "node test/proxy-smoke.mjs",
+    "mockups": "node test/preview/mockups.mjs"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AleixRocal/dsh-sidepanel-web"
+    "url": "git+https://github.com/AleixRocal/dsh-sidepanel-web.git"
   },
-  "homepage": "https://github.com/AleixRocal/dsh-sidepanel-web",
+  "homepage": "https://github.com/AleixRocal/dsh-sidepanel-web#readme",
   "bugs": {
     "url": "https://github.com/AleixRocal/dsh-sidepanel-web/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "dsh",
     "dsh-plugin",
+    "deepseek",
     "deepseek-harness",
+    "cordis",
     "browser",
     "sidebar",
     "annotation",
-    "cdp"
+    "cdp",
+    "device-emulation",
+    "screencast"
   ]
 }

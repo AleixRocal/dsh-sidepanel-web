@@ -1,41 +1,103 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
-  <rect width="1280" height="820" fill="#f6f8fa"/>
-  <rect width="1280" height="56" fill="#ffffff"/>
-  <line x1="0" y1="56" x2="1280" y2="56" stroke="#d0d7de"/>
-  <circle cx="36" cy="28" r="10" fill="#0969da"/>
-  <text x="56" y="33" font-size="16" font-weight="600" fill="#1f2328">示例商城</text>
-  <text x="1000" y="33" font-size="14" fill="#57606a">购物车 · 2 件</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1400" viewBox="0 0 1280 1400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <!-- Fictional storefront used by the preview harness and the marketing
+       mockups. Every string here is invented: no real account, address,
+       order or customer data. -->
+  <rect width="1280" height="1400" fill="#f6f4ef"/>
 
-  <rect x="120" y="104" width="640" height="520" rx="12" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="152" y="150" font-size="20" font-weight="600" fill="#1f2328">确认订单</text>
-  <text x="152" y="184" font-size="14" fill="#57606a">收货信息 · 上海市浦东新区</text>
-  <line x1="152" y1="208" x2="728" y2="208" stroke="#eaeef2"/>
+  <rect width="1280" height="64" fill="#fffdf9"/>
+  <line x1="0" y1="64" x2="1280" y2="64" stroke="#e6e1d8"/>
+  <rect x="40" y="20" width="24" height="24" rx="7" fill="#1f3d33"/>
+  <path d="M46 33 l6 -7 6 7" fill="none" stroke="#f6f4ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="74" y="38" font-size="16" font-weight="600" fill="#14110e">Northwind Supply</text>
+  <text x="300" y="38" font-size="13" fill="#6b655c">Shop</text>
+  <text x="352" y="38" font-size="13" fill="#6b655c">Journal</text>
+  <text x="418" y="38" font-size="13" fill="#6b655c">Support</text>
+  <text x="1240" y="38" font-size="13" text-anchor="end" fill="#14110e">Cart · 2</text>
 
-  <rect x="152" y="232" width="64" height="64" rx="8" fill="#eaeef2"/>
-  <text x="232" y="258" font-size="15" fill="#1f2328">示例商品 · 标准版</text>
-  <text x="232" y="282" font-size="13" fill="#57606a">数量 1 · 一年订阅</text>
-  <text x="700" y="262" font-size="15" text-anchor="end" fill="#1f2328">¥ 1,280.00</text>
+  <text x="120" y="106" font-size="11" letter-spacing="1.2" fill="#8a8378">HOME / CHECKOUT</text>
 
-  <rect x="152" y="320" width="576" height="1" fill="#eaeef2"/>
-  <text x="152" y="356" font-size="14" fill="#57606a">小计</text>
-  <text x="728" y="356" font-size="14" text-anchor="end" fill="#1f2328">¥ 1,280.00</text>
-  <text x="152" y="388" font-size="14" fill="#57606a">运费</text>
-  <text x="728" y="388" font-size="14" text-anchor="end" fill="#1f2328">¥ 0.00</text>
+  <rect x="120" y="124" width="640" height="512" rx="14" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="152" y="168" font-size="22" font-weight="600" fill="#14110e">Checkout</text>
+  <text x="152" y="194" font-size="13" fill="#6b655c">Delivering to 18 Example Street, Sample City</text>
+  <text x="728" y="194" font-size="13" text-anchor="end" fill="#2f5d50">Change</text>
+  <line x1="152" y1="216" x2="728" y2="216" stroke="#efeae1"/>
 
-  <rect x="152" y="536" width="576" height="44" rx="8" fill="#1f883d"/>
-  <text x="440" y="564" font-size="16" font-weight="600" text-anchor="middle" fill="#ffffff">确认支付 ¥ 1,280.00</text>
-  <text x="152" y="606" font-size="12" fill="#8c959f">点击即表示同意《服务条款》</text>
+  <rect x="152" y="240" width="64" height="64" rx="10" fill="#e9e3d8"/>
+  <path d="M170 286 l10 -22 10 22 z" fill="#1f3d33" opacity=".75"/>
+  <text x="232" y="266" font-size="15" fill="#14110e">Trail Jacket</text>
+  <text x="232" y="290" font-size="13" fill="#6b655c">Moss / M · Qty 1</text>
+  <text x="728" y="270" font-size="15" text-anchor="end" fill="#14110e">€124.00</text>
 
-  <rect x="800" y="104" width="360" height="248" rx="12" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="828" y="146" font-size="16" font-weight="600" fill="#1f2328">订单摘要</text>
-  <text x="828" y="180" font-size="13" fill="#57606a">订单号 20261023A7</text>
-  <text x="828" y="206" font-size="13" fill="#57606a">支付方式 · 在线支付</text>
-  <text x="828" y="232" font-size="13" fill="#57606a">预计发货 · 24 小时内</text>
-  <rect x="828" y="258" width="304" height="34" rx="6" fill="#ddf4ff"/>
-  <text x="844" y="280" font-size="12" fill="#0969da">新用户立减券已自动应用</text>
+  <rect x="152" y="320" width="48" height="48" rx="10" fill="#e9e3d8"/>
+  <circle cx="176" cy="344" r="11" fill="#1f3d33" opacity=".7"/>
+  <text x="216" y="340" font-size="15" fill="#14110e">Everyday Cap</text>
+  <text x="216" y="360" font-size="13" fill="#6b655c">Sand / One size · Qty 1</text>
+  <text x="728" y="344" font-size="15" text-anchor="end" fill="#14110e">€28.00</text>
 
-  <rect x="800" y="376" width="360" height="248" rx="12" fill="#ffffff" stroke="#d0d7de"/>
-  <text x="828" y="418" font-size="16" font-weight="600" fill="#1f2328">客服</text>
-  <text x="828" y="452" font-size="13" fill="#57606a">工作日 9:00–21:00</text>
-  <text x="828" y="478" font-size="13" fill="#57606a">在线咨询 · 400-000-0000</text>
+  <line x1="152" y1="392" x2="728" y2="392" stroke="#efeae1"/>
+  <text x="152" y="424" font-size="13" fill="#6b655c">Subtotal</text>
+  <text x="728" y="424" font-size="13" text-anchor="end" fill="#14110e">€152.00</text>
+  <text x="152" y="452" font-size="13" fill="#6b655c">Shipping</text>
+  <text x="728" y="452" font-size="13" text-anchor="end" fill="#2f5d50">Free</text>
+  <line x1="152" y1="476" x2="728" y2="476" stroke="#efeae1"/>
+  <text x="152" y="508" font-size="15" font-weight="600" fill="#14110e">Total</text>
+  <text x="728" y="508" font-size="15" font-weight="600" text-anchor="end" fill="#14110e">€152.00</text>
+
+  <rect x="152" y="536" width="576" height="44" rx="10" fill="#1f3d33"/>
+  <text x="440" y="564" font-size="15" font-weight="600" text-anchor="middle" fill="#f6f4ef">Place order · €152.00</text>
+  <text x="152" y="608" font-size="11" fill="#8a8378">You can review the order before it is confirmed.</text>
+
+  <rect x="800" y="124" width="360" height="232" rx="14" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="828" y="166" font-size="15" font-weight="600" fill="#14110e">Order summary</text>
+  <text x="828" y="198" font-size="13" fill="#6b655c">Arrives Tue 10 Nov</text>
+  <text x="828" y="222" font-size="13" fill="#6b655c">Payment · Visa ending 4242</text>
+  <text x="828" y="246" font-size="13" fill="#6b655c">Carbon-neutral delivery</text>
+  <rect x="828" y="272" width="304" height="36" rx="8" fill="#eef2ed"/>
+  <text x="844" y="295" font-size="12" fill="#2f5d50">First-order discount applied</text>
+  <text x="828" y="334" font-size="11" fill="#8a8378">Sample checkout · not a real order.</text>
+
+  <rect x="800" y="380" width="360" height="256" rx="14" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="828" y="422" font-size="15" font-weight="600" fill="#14110e">Need a hand?</text>
+  <text x="828" y="452" font-size="13" fill="#6b655c">Mon–Fri · 9:00–18:00</text>
+  <text x="828" y="476" font-size="13" fill="#6b655c">support@example.com</text>
+  <line x1="828" y1="504" x2="1132" y2="504" stroke="#efeae1"/>
+  <text x="828" y="536" font-size="12" fill="#6b655c">Returns accepted within 30 days.</text>
+  <text x="828" y="560" font-size="12" fill="#6b655c">Ships from Sample City warehouse.</text>
+
+  <!-- below the fold: keeps the page close to the panel's aspect ratio -->
+  <line x1="120" y1="716" x2="1160" y2="716" stroke="#e6e1d8"/>
+  <text x="120" y="776" font-size="20" font-weight="600" fill="#14110e">What happens next</text>
+
+  <rect x="120" y="804" width="336" height="118" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="144" y="840" font-size="11" letter-spacing="1" fill="#8a8378">01</text>
+  <text x="144" y="866" font-size="14" font-weight="600" fill="#14110e">Confirm</text>
+  <text x="144" y="890" font-size="12" fill="#6b655c">You get an email with the order number.</text>
+
+  <rect x="472" y="804" width="336" height="118" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="496" y="840" font-size="11" letter-spacing="1" fill="#8a8378">02</text>
+  <text x="496" y="866" font-size="14" font-weight="600" fill="#14110e">Pack</text>
+  <text x="496" y="890" font-size="12" fill="#6b655c">Packed in recycled paper within 24 hours.</text>
+
+  <rect x="824" y="804" width="336" height="118" rx="12" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="848" y="840" font-size="11" letter-spacing="1" fill="#8a8378">03</text>
+  <text x="848" y="866" font-size="14" font-weight="600" fill="#14110e">Track</text>
+  <text x="848" y="890" font-size="12" fill="#6b655c">A tracking link arrives the same day.</text>
+
+  <rect x="120" y="954" width="1040" height="132" rx="14" fill="#eef2ed"/>
+  <text x="148" y="994" font-size="15" font-weight="600" fill="#1f3d33">Built to last, sent back for free</text>
+  <text x="148" y="1022" font-size="12.5" fill="#41594f">30-day returns · 2-year repairs · carbon-neutral delivery</text>
+  <rect x="948" y="992" width="184" height="40" rx="9" fill="#1f3d33"/>
+  <text x="1040" y="1017" font-size="12.5" font-weight="600" text-anchor="middle" fill="#f6f4ef">Our materials</text>
+
+  <text x="120" y="1140" font-size="15" font-weight="600" fill="#14110e">Join the field notes</text>
+  <text x="120" y="1164" font-size="12.5" fill="#6b655c">One short email a month. Unsubscribe any time.</text>
+  <rect x="120" y="1184" width="300" height="42" rx="9" fill="#ffffff" stroke="#e6e1d8"/>
+  <text x="140" y="1210" font-size="12" fill="#a19a8e">you@example.com</text>
+  <rect x="432" y="1184" width="120" height="42" rx="9" fill="#1f3d33"/>
+  <text x="492" y="1210" font-size="12" font-weight="600" text-anchor="middle" fill="#f6f4ef">Subscribe</text>
+
+  <line x1="120" y1="1280" x2="1160" y2="1280" stroke="#e6e1d8"/>
+  <text x="120" y="1318" font-size="12" fill="#6b655c">Shop · Journal · Support · Returns</text>
+  <text x="1160" y="1318" font-size="12" text-anchor="end" fill="#6b655c">© 2026 Northwind Supply (fictional)</text>
+  <text x="120" y="1350" font-size="11" fill="#a19a8e">Fictional storefront for documentation screenshots. No real customer, payment or account data.</text>
 </svg>
