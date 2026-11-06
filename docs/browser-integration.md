@@ -528,6 +528,12 @@ Les quatre imatges de `assets/screenshots/` es generen amb
 | `03-devices.png` | emulació de telèfon 390×844 amb el menú de presets obert |
 | `04-how-it-works.png` | els dos portadors i el camí de l'anotació |
 
+![El panell del navegador al costat d'una conversa de DSH Web, amb una anotació al xat](../assets/screenshots/01-browser-panel.png)
+
+*Mockup: el panell és el codi real, el xat i la botiga són inventats.*
+
+![Diagrama dels dos portadors i del camí de l'anotació](../assets/screenshots/04-how-it-works.png)
+
 Regles de privacitat que compleixen i que s'han de mantenir si es regeneren:
 
 - el panell és el **codi real** (`lib/client.js`) contra el backend mock, però el
