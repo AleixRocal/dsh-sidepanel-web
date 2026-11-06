@@ -4,7 +4,7 @@
 
 `dsh-sidepanel-web` adds a **Browser** tab to the DSH right sidebar. Local/dev pages are served through a same-origin rewriting proxy, so they render natively, keep their JavaScript and buttons working, and expose their DOM to an annotation overlay. Any other page is rendered by a real Chromium over CDP, so sites that refuse framing work too. Pick an element, write a note, and the annotation lands in the composer as a reference the agent can act on.
 
-> **Status: alpha.** Two carriers (native proxy and CDP), device emulation, an automatic `https://` address bar and chat-link navigation are implemented. The plugin is being submitted to the [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) market; see [Market](#market).
+> **Status: alpha.** Two carriers (native proxy and CDP), device emulation, an automatic `https://` address bar and chat-link navigation are implemented. The plugin is submitted to the [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) market ([PR #12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641)); see [Market](#market).
 
 ![DSH Web with the Browser panel open next to a conversation](assets/screenshots/01-browser-panel.png)
 
@@ -240,9 +240,9 @@ The [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugi
 - [x] `package.json` declares `dsh.bundle` and ships [`cordis.patch.yml`](cordis.patch.yml).
 - [x] Raster icon at `assets/icon-180.png` and storefront screenshots in [`screenshots.json`](screenshots.json).
 - [x] Entry drafted at [`market/entry.yml`](market/entry.yml).
-- [ ] Pull request to `awesome-dsh-plugin/awesome-dsh-plugin` adding `data/plugins/AleixRocal__dsh-sidepanel-web.yml` (the entry file is the whole submission).
+- [x] Pull request opened: [awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641) — one file, `data/plugins/AleixRocal__dsh-sidepanel-web.yml`.
 
-The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically, so an early PR is held, not rejected.
+The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically, so an early PR is held, not rejected. This repository crossed its first day on 2026-11-06 at 15:45 UTC; until then the submission gate may report the age check as pending.
 
 ## License
 

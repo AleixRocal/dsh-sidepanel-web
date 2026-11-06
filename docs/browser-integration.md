@@ -539,8 +539,9 @@ Regles de privacitat que compleixen i que s'han de mantenir si es regeneren:
 - `screenshots.json` declara les quatre imatges per al storefront del market.
 
 L'entrada del market és a `market/entry.yml` (una sola entrada; la descripció va
-entre cometes perquè conté `: ` i YAML no la llegeixi com una clau) i la PR afegeix
-`data/plugins/AleixRocal__dsh-sidepanel-web.yml`; el CI del registre valida edat
+entre cometes perquè conté `: ` i YAML no la llegeixi com una clau) i la PR
+[awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641)
+afegeix `data/plugins/AleixRocal__dsh-sidepanel-web.yml`; el CI del registre valida edat
 del repo, manifest `dsh.bundle`, tema `dsh-plugin`, icona i YAML.
 
 ---
