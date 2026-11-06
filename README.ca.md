@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Última versió" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&display_name=release"></a>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Última versió" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&label=release&display_name=tag"></a>
   <a href="LICENSE"><img alt="Llicència MIT" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
   <img alt="DSH 0.2.1-rc.2 a 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
   <img alt="Node 22.19+" src="https://img.shields.io/badge/node-%E2%89%A522.19-339933?logo=nodedotjs&logoColor=white">
