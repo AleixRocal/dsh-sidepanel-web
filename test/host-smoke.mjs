@@ -11,7 +11,15 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { AnnotateBrowserService } from "../lib/service.js";
 
-const CHROME = process.env.CHROME_PATH || "/home/user/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome";
+const CHROME =
+  process.env.CHROME_PATH ||
+  [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    join(homedir(), ".cache/ms-playwright/chromium-1248/chrome-linux64/chrome")
+  ].find((p) => existsSync(p)) ||
+  "google-chrome";
 const PROFILE = join(homedir(), ".local/share/dsh-sidepanel-web/profile");
 const OUT_DIR = join(homedir(), ".cache/ab-host-smoke");
 const config = { chromePath: CHROME, headless: true };
