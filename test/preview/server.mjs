@@ -13,6 +13,7 @@ import http from "node:http";
 import { readFileSync, createReadStream, statSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { overlayScript } from "../../lib/page.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
@@ -147,6 +148,19 @@ const server = http.createServer(async (req, res) => {
       return sendImage(res, MOBILE);
     }
     return sendImage(res);
+  }
+
+  // Same-origin proxy fixture for the native carrier: a tiny page plus the
+  // real annotation overlay, so Esc-inside-the-iframe can be exercised.
+  if (p.startsWith("/api/sidepanel-web/p/")) {
+    const nonce = u.searchParams.get("nonce") || "";
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Local fixture</title>
+<style>body{margin:0;font:14px system-ui;background:#f6f4ef;color:#14110e;padding:24px}button{padding:10px 16px;border-radius:8px;border:0;background:#1f3d33;color:#fff}</style></head>
+<body><h1>Local fixture app</h1><p>This page is served by the preview proxy mock.</p><button id="cta">Place order</button>
+${overlayScript(nonce, "http://shop.local")}</body></html>`;
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+    res.end(html);
+    return;
   }
 
   if (p === "/api/sidepanel-web/element" && req.method === "POST") {

@@ -92,10 +92,16 @@ async function main() {
   await client.send("Runtime.enable", {}, sid);
   await client.send("Emulation.setDeviceMetricsOverride", { width: 900, height: 900, deviceScaleFactor: 1, mobile: false }, sid);
 
+  const states = [
+    { state: "esc", extra: "" },
+    { state: "insert", extra: "" },
+    // Native carrier: local URL -> iframe proxy -> overlay forwards Esc.
+    { state: "esc-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` }
+  ];
   const results = {};
-  for (const state of ["esc", "insert"]) {
+  for (const { state, extra } of states) {
     await client.send("Page.navigate", {
-      url: `${BASE}/harness.html?state=${state}&w=760&h=900&chrome=0&lang=en`
+      url: `${BASE}/harness.html?state=${state}&w=760&h=900&chrome=0&lang=en${extra}`
     }, sid);
     let ready = false;
     for (let i = 0; i < 160; i += 1) {
@@ -110,16 +116,20 @@ async function main() {
     assert.ok(ready, `${state}: harness never became ready`);
     const out = await client.send(
       "Runtime.evaluate",
-      { expression: "JSON.stringify({ esc: window.__esc || null, insert: window.__insert || null })", returnByValue: true },
+      { expression: "JSON.stringify(window.__esc || window.__insert || window.__escNative || null)", returnByValue: true },
       sid
     );
-    const parsed = JSON.parse(out.result.value);
-    results[state] = parsed[state];
+    results[state] = JSON.parse(out.result.value);
   }
 
   assert.ok(results.esc, "esc: no result");
   assert.equal(results.esc.before, "true", "esc: annotate mode was not armed first");
   assert.equal(results.esc.after, "false", "esc: Escape did not leave annotate mode");
+
+  assert.ok(results["esc-native"], "esc-native: no result");
+  assert.equal(results["esc-native"].error, null, "esc-native: overlay dispatch failed");
+  assert.equal(results["esc-native"].before, true, "esc-native: annotate mode was not armed first");
+  assert.equal(results["esc-native"].after, false, "esc-native: Escape inside the iframe did not leave annotate mode");
 
   assert.ok(results.insert, "insert: no result");
   assert.ok(results.insert.draft && results.insert.draft.includes("Screenshot:"), "insert: crop path missing from the text");
@@ -129,7 +139,8 @@ async function main() {
   assert.ok(results.insert.draftFiles[0].size > 0, "insert: crop File is empty");
 
   console.log("behavior: ok");
-  console.log("  Esc leaves annotate mode:", results.esc.before, "->", results.esc.after);
+  console.log("  Esc leaves annotate mode (CDP):", results.esc.before, "->", results.esc.after);
+  console.log("  Esc leaves annotate mode (native iframe):", results["esc-native"].before, "->", results["esc-native"].after);
   console.log("  crop attached:", results.insert.draftFiles[0], "ids:", results.insert.attached.join(","));
 
   client.close();

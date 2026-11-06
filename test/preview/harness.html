@@ -158,6 +158,27 @@
     return null;
   };
 
+
+  if (state === "esc-native") {
+    // Native carrier: the page lives in a same-origin iframe, so Esc has to be
+    // caught by the injected overlay and forwarded as a cancel message.
+    await waitFor(".ab2-root");
+    await sleep(600);
+    const findToggle = () => [...document.querySelectorAll(".ab2-btn")].find((b) => /Annotate|Exit annotate|标注/i.test(b.textContent));
+    const toggle = findToggle();
+    if (toggle) { toggle.click(); await sleep(600); }
+    const before = findToggle() ? findToggle().className.indexOf(" on") >= 0 : null;
+    const frame = document.querySelector("iframe.ab2-frame");
+    try {
+      if (frame && frame.contentDocument) {
+        frame.contentDocument.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      }
+    } catch (e) { window.__escNativeError = String(e); }
+    await sleep(500);
+    const after = findToggle() ? findToggle().className.indexOf(" on") >= 0 : null;
+    window.__escNative = { before, after, error: window.__escNativeError || null };
+  }
+
   if (state === "insert") {
     // 先把隐藏写入器挂上（真实宿主里它在 conversation.input.dock 槽位）
     const writerHost = document.createElement("div");
@@ -288,7 +309,8 @@
     natural: frameImg ? [frameImg.naturalWidth, frameImg.naturalHeight] : null,
     overflow: stage ? { sw: stage.scrollWidth, cw: stage.clientWidth, sh: stage.scrollHeight, ch: stage.clientHeight } : null,
     docScroll: { sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight },
-    esc: window.__esc || null
+    esc: window.__esc || null,
+    escNative: window.__escNative || null
   };
   document.body.setAttribute("data-ready", "1");
   window.__ready = true;
