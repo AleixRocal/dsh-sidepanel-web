@@ -1,61 +1,128 @@
-# dsh-sidepanel-web
+<p align="center">
+  <img src="assets/banner.png" alt="dsh-sidepanel-web — a browser in the DSH right sidebar with annotations that reach the chat" width="100%">
+</p>
 
-**A browser in the right sidebar of DeepSeek Harness Web — with element annotations that reach the chat.**
+<p align="center">
+  <strong>A browser in the right sidebar of DeepSeek Harness Web — with element picks that reach the chat.</strong>
+</p>
 
-`dsh-sidepanel-web` adds a **Browser** tab to the DSH right sidebar. Local/dev pages are served through a same-origin rewriting proxy, so they render natively, keep their JavaScript and buttons working, and expose their DOM to an annotation overlay. Any other page is rendered by a real Chromium over CDP, so sites that refuse framing work too. Pick an element, write a note, and the annotation lands in the composer as a reference the agent can act on.
+<p align="center">
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&display_name=release"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
+  <img alt="DSH 0.2.1-rc.2 to 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
+  <img alt="Node 22.19+" src="https://img.shields.io/badge/node-%E2%89%A522.19-339933?logo=nodedotjs&logoColor=white">
+  <a href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641"><img alt="Market submission" src="https://img.shields.io/badge/market-PR%20%2312641-2ea44f"></a>
+</p>
 
-> **Status: alpha.** Two carriers (native proxy and CDP), device emulation, an automatic `https://` address bar and chat-link navigation are implemented. The plugin is submitted to the [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) market ([PR #12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641)); see [Market](#market).
+<p align="center">
+  English · <a href="README.ca.md">Català</a>
+</p>
+
+`dsh-sidepanel-web` adds a **Browser** tab to the DSH right sidebar. Open a page next to the conversation, pick the element you are talking about, write a note, and send it to the composer with its selector, styles, size and a cropped screenshot attached.
+
+> [!TIP]
+> **One panel, two carriers.** Local/dev pages go through a same-origin proxy and stay fully interactive. Any public page is rendered by a real Chromium over CDP, so `X-Frame-Options` and CSP cannot block it. The panel picks the carrier from the URL; the switch is one click away.
 
 ![DSH Web with the Browser panel open next to a conversation](assets/screenshots/01-browser-panel.png)
 
-*Mockup screenshots. The storefront, conversation and URLs are invented; no real account or customer data is shown. See [Screenshots](#screenshots).*
+<p align="center"><em>Mockup screenshots: the storefront, conversation and URLs are invented. No real account or customer data is shown.</em></p>
+
+## Table of contents
+
+- [Why](#why)
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Screenshots](#screenshots)
+- [Screenshots and privacy](#screenshots-and-privacy)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [How it works](#how-it-works)
+- [FAQ](#faq)
+- [Security](#security)
+- [Known limitations](#known-limitations)
+- [Development](#development)
+- [Changelog](CHANGELOG.md)
+- [Market](#market)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [License](#license)
 
 ## Why
 
-Talking about a web page with an agent usually means screenshots, coordinates, and vague descriptions. This panel keeps the page next to the conversation and turns “this button here” into a precise payload: selector, text, classes, styles, position, and a cropped screenshot.
+Talking about a web page with an agent usually means screenshots, coordinates and vague descriptions. This panel keeps the page next to the conversation and turns “this button here” into a precise payload: selector, text, classes, styles, position and a cropped screenshot.
 
-It works in two directions:
+It works in both directions:
 
 - **The pages you are building** — `localhost`, `*.local`, private IPs, dev servers with self-signed certificates — where the DSH host can reach the page even when your browser cannot. These go through the same-origin proxy and stay fully interactive and annotatable.
-- **Any public page** — docs, a competitor, a issue tracker, a staging site behind a login. These are rendered by a real Chromium on the host over CDP; `X-Frame-Options` and CSP cannot stop them.
+- **Any public page** — docs, a competitor, an issue tracker, a staging site behind a login. These are rendered by a real Chromium on the host over CDP; `X-Frame-Options` and CSP cannot stop them.
 
 ## Features
 
-- **Right-sidebar Browser tab** registered through the official `ctx.sidebarRightTabs` + `sidebar.right.pane.tab` API.
-- **Automatic address-bar scheme.** Type `example.com` and the panel opens `https://example.com/`; type `shop.local:5173` or `127.0.0.1:5173` and it uses `http://` instead. Non-web schemes (`mailto:`, `file:`, `javascript:`, `data:`) are refused instead of being turned into a website.
-- **Native rendering for local/dev pages** through a rewriting proxy:
-  - HTML, CSS, JS, images and API requests stay on the DSH origin.
-  - A small shim keeps `fetch`, `XMLHttpRequest`, `history.pushState`/`replaceState` and `window.open` on the proxy.
-  - Self-signed certificates are accepted for local hosts.
-  - `<script type="importmap">` URLs (imports and scopes) are rewritten too, so ES-module apps keep loading.
-  - Only real URL attributes are rewritten: `data-action="family"`-style action names stay untouched.
-- **Any public site via CDP screencast.** A real Chromium renders the page on the host and streams frames; clicks, wheel, typing and drags are forwarded. A page cannot be framed when it sends `X-Frame-Options`/`frame-ancestors` — that is why this carrier exists.
-- **Chat links land here.** The tab registers `kind: "browser"`, so the chat's “open link in sidebar” preference opens this annotated browser instead of a system tab; `params.url` is navigated on arrival.
-- **Device emulation.** Responsive (fits the panel), desktop 1280×800, laptop 1440×900, tablet 768×1024 (iPad UA), phone 390×844 (iPhone UA) and Android 412×915 — real touch emulation and matching `devicePixelRatio`.
-- **Switch carrier, any time.** The native view has a *Remote view (CDP)* button and the CDP view offers *Native view (proxy)* for local hosts; the choice is remembered per site. A local app the proxy cannot drive is one click away from the real browser.
-- **Bring your own browser.** Point `cdpUrl`/`wsUrl` at any Chrome started with `--remote-debugging-port`; the panel drives that browser, with its cookies and logins. Otherwise it discovers one on the usual ports, or launches its own with a persistent profile.
-- **Annotation overlay** injected into the proxied page:
-  - Hover inspector: `tag#id.class  240×44  [role]`.
-  - Element pick with selector, text, classes, styles, position, HTML excerpt and page URL.
-  - Numbered pins, notes, and a crop captured by selector.
-- **Composer hand-off**: annotations are inserted with `InputActions.insertText`, so they do not replace the draft.
-- **English / Spanish UI** through `ctx.locale`; other locales fall back to English.
-- **Host-side Chromium** over CDP: attaches to an existing browser when one is reachable, otherwise auto-detects Chrome/Chromium, falls back to a container-safe launch, and keeps a dedicated profile.
+**Navigation and carriers**
 
-## Requirements
+- **Automatic address-bar scheme.** Type `example.com` and the panel opens `https://example.com/`; type `shop.local:5173`, `127.0.0.1:5173` or `192.168.1.20:8080` and it uses `http://` instead. Non-web schemes (`mailto:`, `file:`, `javascript:`, `data:`) are refused instead of being turned into a website.
+- **Two carriers, switchable per site.** The native view has a *Remote view (CDP)* button; the CDP view offers *Native view (proxy)* for local hosts. The choice is remembered per origin.
+- **Chat links land here.** The tab registers `kind: "browser"`, so the chat's “open link in sidebar” preference opens this annotated browser; `params.url` is navigated on arrival.
+- **Bring your own browser.** Point `cdpUrl`/`wsUrl` at any Chrome started with `--remote-debugging-port`, or let the plugin discover one, or let it launch its own with a persistent profile.
+
+**The native carrier (local/dev)**
+
+- HTML, CSS, JS, images and API requests stay on the DSH origin through a rewriting proxy.
+- A small shim keeps `fetch`, `XMLHttpRequest`, `history.pushState`/`replaceState` and `window.open` on the proxy.
+- Self-signed certificates are accepted for local hosts.
+- `<script type="importmap">` URLs (imports and scopes) are rewritten, so ES-module apps keep loading.
+- Only real URL attributes are rewritten: `data-action="family"`-style action names stay untouched.
+- Cookies are kept in a per-origin host jar; DSH's own session cookie is never forwarded.
+
+**The remote carrier (public pages)**
+
+- A real Chromium renders the page on the host and streams frames; clicks, wheel, typing and drags are forwarded.
+- Works on sites that refuse framing (`X-Frame-Options`/`frame-ancestors`, CSP).
+- Your logins and cookies come from the browser profile you point it at.
+
+**Annotations and devices**
+
+- Hover inspector: `tag#id.class  240×44  [role]`.
+- Element pick with selector, text, classes, styles, position, HTML excerpt and page URL.
+- Numbered pins, notes, and a crop captured by selector.
+- Composer hand-off with `InputActions.insertText`, so the draft is not replaced.
+- Device emulation: responsive (fits the panel), desktop 1280×800, laptop 1440×900, tablet 768×1024 (iPad UA), phone 390×844 (iPhone UA) and Android 412×915 — real touch emulation and matching `devicePixelRatio`.
+- English and Spanish UI through `ctx.locale`; other locales fall back to English.
+
+## Quick start
+
+### Requirements
 
 - DSH **0.2.1-rc.2** or newer, below `0.3.0` (Web profile).
 - Node.js **22.19+**.
-- A Chromium-based browser on the host. The plugin auto-detects Chrome/Chromium; the Playwright Chromium cache also works:
+- A Chromium-based browser on the host. The plugin auto-detects Chrome/Chromium; the Playwright Chromium cache also works.
 
-```yaml
-- id: dsh-sidepanel-web
-  config:
-    chromePath: ~/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome
+### Install
+
+```bash
+# from GitHub
+dsh plugin --profile web add github:AleixRocal/dsh-sidepanel-web
+
+# or from a local clone, while developing
+git clone https://github.com/AleixRocal/dsh-sidepanel-web
+dsh plugin --profile web add link:/absolute/path/to/dsh-sidepanel-web
 ```
 
-To reuse a browser you already run (same cookies and logins), expose its CDP port
-and point the plugin at it — no separate install:
+Restart `dsh web` once and refresh the GUI. The **Browser** tab appears in the right-sidebar guide.
+
+### First page
+
+1. Expand the right sidebar and choose **Browser**.
+2. Type `example.com` and press **Enter**. The panel opens `https://example.com/`; the scheme is added for you.
+3. Click **Annotate**, hover the page, click an element, write the note and choose **Insert**.
+
+> [!NOTE]
+> If no browser is found on the usual CDP ports, the plugin launches a dedicated headless Chromium with a persistent profile. Set `chromePath` only when auto-detection misses your binary.
+
+### Use your own browser
+
+To reuse the browser you already run (same cookies and logins), expose its CDP port and point the plugin at it — no separate install:
 
 ```sh
 google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/chrome-dsh" &
@@ -67,26 +134,50 @@ google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/chrome
     cdpUrl: http://127.0.0.1:9222   # or wsUrl: ws://127.0.0.1:9222/devtools/browser/…
 ```
 
-Chrome 136+ refuses `/json/version` on the default profile, hence the separate
-`--user-data-dir`. Without `cdpUrl`/`wsUrl` the plugin probes 9222–9225 and 9333,
-then `~/.local/state/dsh-sidepanel-web/browser.json`, then the ego bridge file.
+Chrome 136+ refuses `/json/version` on the default profile, hence the separate `--user-data-dir`. Without `cdpUrl`/`wsUrl` the plugin probes 9222–9225 and 9333, then `~/.local/state/dsh-sidepanel-web/browser.json`, then the ego bridge file.
 
-## Install
+## Screenshots
 
-From GitHub:
+| | |
+| --- | --- |
+| ![Annotating the place-order button](assets/screenshots/02-annotate.png) | ![Phone emulation preset](assets/screenshots/03-devices.png) |
+| **Pick, note, send.** The pin lands on the element and the note card prepares the composer payload. | **Device emulation.** Desktop, laptop, tablet, iPhone and Android with touch and DPR. |
 
-```bash
-dsh plugin --profile web add github:AleixRocal/dsh-sidepanel-web
+![How the two carriers and the annotation path work](assets/screenshots/04-how-it-works.png)
+
+<p align="center"><em>The diagram: a local/dev page through the same-origin proxy, a public page through CDP, and both feeding the same annotation payload.</em></p>
+
+All screenshots are mockups generated from [`test/preview/shell.html`](test/preview/shell.html) and [`test/preview/diagram.html`](test/preview/diagram.html): the panel is the real client, the storefront is the fictional **Northwind Supply** on the reserved `example.com` domain, and no real account, page or customer data is used. See [Screenshots and privacy](#screenshots-and-privacy).
+
+## Usage
+
+1. Open a session, expand the right sidebar, and choose **Browser**.
+2. Enter a URL in the address bar.
+   - `example.com` → `https://example.com/` (scheme added for you).
+   - `localhost:3000`, `shop.local`, `192.168.1.20:8080` → `http://` is used for local/dev hosts, which rarely have TLS.
+   - **Local/dev host**: the page is proxied through DSH and is fully interactive.
+   - **Public host**: the page is rendered by the host Chromium and streamed into the panel. Use **Native view** only for local sites.
+3. Click **Annotate** (or the annotate toggle) and hover the page. The inspector shows the element type and size.
+4. Click the element, write the note, and choose **Add to list**.
+5. Choose **Insert** to place the annotations in the composer; send the message.
+
+| URL | Carrier | Why |
+| --- | --- | --- |
+| `example.com`, any public site | CDP screencast | Works even when the site sends `X-Frame-Options`/CSP. |
+| `localhost`, `*.local`, private/loopback/link-local IPs | Same-origin proxy | Native rendering, DOM access and annotation without a screencast. |
+
+Each annotation looks like this:
+
+```text
+[Annotation 1] button#save.primary
+· Selector: #save
+· Text: Save changes
+· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); …
+· Position: 132×40 @ (24, 680)
+· Page: Settings https://localhost:5173/settings
+· Note: Make this primary action sticky on mobile
+· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
 ```
-
-From a local clone while developing:
-
-```bash
-git clone https://github.com/AleixRocal/dsh-sidepanel-web
-dsh plugin --profile web add link:/absolute/path/to/dsh-sidepanel-web
-```
-
-Then restart `dsh web` once and refresh the GUI. The Browser tab appears in the right-sidebar guide.
 
 ## Configuration
 
@@ -115,34 +206,7 @@ Set options in the profile patch, under the plugin's row:
 | `streamMode` | `screencast` | `screencast` or `poll` (legacy stream mode). |
 | `streamFps` | `15` | Frame-rate cap for the legacy stream mode. |
 
-## Usage
-
-1. Open a session, expand the right sidebar, and choose **Browser**.
-2. Enter a URL in the address bar.
-   - `example.com` → the panel opens `https://example.com/` (scheme added for you).
-   - `localhost:3000`, `shop.local`, `192.168.1.20:8080` → `http://` is used for local/dev hosts, which rarely have TLS.
-   - **Local/dev host**: the page is proxied through DSH and is fully interactive.
-   - **Public host**: the page is rendered by the host Chromium and streamed into the panel. Use **Native view** only for local sites.
-3. Click **Annotate** (or the annotate toggle) and hover the page. The inspector shows the element type and size.
-4. Click the element, write the note, and choose **Add to list**.
-5. Choose **Insert** to place the annotations in the composer; send the message.
-
-Each annotation looks like this:
-
-```text
-[Annotation 1] button#save.primary
-· Selector: #save
-· Text: Save changes
-· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); …
-· Position: 132×40 @ (24, 680)
-· Page: Settings https://localhost:5173/settings
-· Note: Make this primary action sticky on mobile
-· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
-```
-
-## Architecture
-
-![How the two carriers and the annotation path work](assets/screenshots/04-how-it-works.png)
+## How it works
 
 ```text
 DSH Web GUI
@@ -166,13 +230,74 @@ DSH Web GUI
 
 A deeper write-up of the DSH Web integration (slots, tab registry, carriers, browser discovery) is in [`docs/browser-integration.md`](docs/browser-integration.md) (Catalan).
 
+## FAQ
+
+<details>
+<summary><strong>I typed <code>example.com</code> and it opened <code>https://example.com/</code>. Can I force <code>http://</code>?</strong></summary>
+
+Yes — type the scheme explicitly (`http://example.com`). Local/dev hosts (`localhost`, `*.local`, private, loopback and link-local addresses) already default to `http://` because dev servers rarely have TLS. Non-web schemes are rejected.
+</details>
+
+<details>
+<summary><strong>The public page shows a connection error or refuses to load.</strong></summary>
+
+Public pages use the CDP carrier, not an iframe, so `X-Frame-Options` is not the cause. Check that the host Chromium is running and reachable (`cdpUrl`/`wsUrl` or the auto-launch), and that the host has network access to the site. The panel's status line names the CDP error.
+</details>
+
+<details>
+<summary><strong>The local page is blank in the native view.</strong></summary>
+
+The rewriting proxy drives most apps, but WebSockets/HMR are not proxied and some heavy JavaScript apps need a real browser. Use **Remote view (CDP)** for that site; the choice is remembered per origin.
+</details>
+
+<details>
+<summary><strong>Chrome 136+ refuses to expose <code>/json/version</code>.</strong></summary>
+
+Start it with a separate profile: `--user-data-dir="$HOME/.config/chrome-dsh"`. The default profile is protected from CDP since Chrome 136.
+</details>
+
+<details>
+<summary><strong>Where are cookies and logins stored?</strong></summary>
+
+The plugin's own Chromium uses the persistent `profileDir` (`~/.local/share/dsh-sidepanel-web/profile` by default). When you point it at your own browser via `cdpUrl`/`wsUrl`, that browser keeps its own profile and cookies.
+</details>
+
+<details>
+<summary><strong>Does it work in DSH Desktop?</strong></summary>
+
+No. This is a Web-profile plugin; DSH Desktop uses an Electron `<webview>` and a different profile.
+</details>
+
+<details>
+<summary><strong>Can I annotate cross-origin iframes or closed shadow DOM?</strong></summary>
+
+Only their container. The overlay cannot pierce a cross-origin frame or a closed shadow root.
+</details>
+
+<details>
+<summary><strong>How are the screenshots generated, and is any real data used?</strong></summary>
+
+With `npm run mockups`, from the real client and a mock backend. Every image uses invented content (fictional storefront, reserved `example.com`, invented conversation); no real DSH window, account, customer, file path or token is captured. See [Screenshots and privacy](#screenshots-and-privacy).
+</details>
+
+## Screenshots and privacy
+
+Screenshots are part of the deliverable, so they follow a hard rule: **no real user data**.
+
+- The panel is the real `lib/client.js`; the shell around it (conversation, workspace, session) is static HTML in [`test/preview/shell.html`](test/preview/shell.html).
+- The storefront is **Northwind Supply**, a fictional shop on the reserved `example.com` domain.
+- No real DSH window, account, page, customer, file path or token appears in any image.
+- [`screenshots.json`](screenshots.json) declares the four storefront images for plugin marketplaces.
+- Regenerate with `npm run mockups`; the banner is rendered from [`test/preview/banner.html`](test/preview/banner.html).
+
 ## Security
 
 - Every host route calls `connection.requestRejection(req)`; the web server is loopback-bound.
-- The rewriting proxy only accepts **local/dev hosts** (localhost, `*.local`, private, loopback and link-local ranges). Public URLs are refused: the CDP carrier handles those instead.
-- The iframe runs sandboxed (`allow-scripts allow-forms allow-same-origin allow-popups` for local proxy pages). `allow-same-origin` is required for the proxy document to keep its cookies and APIs; it also means a proxied page shares the DSH origin. Only proxy pages you trust.
-- The host browser uses a dedicated profile and ignores certificate errors for local self-signed dev servers.
+- The rewriting proxy only accepts **local/dev hosts** (localhost, `*.local`, private, loopback and link-local ranges). Public URLs are refused and handled by the CDP carrier.
+- The native iframe runs sandboxed (`allow-scripts allow-forms allow-same-origin allow-popups` for local proxy pages). `allow-same-origin` is required for the proxy document to keep its cookies and APIs; it also means a proxied page shares the DSH origin. Only proxy pages you trust.
+- The host browser uses a dedicated profile and ignores certificate errors for local self-signed dev servers. The CDP carrier has the capabilities of the browser you point it at.
 - Annotation text and page content are treated as untrusted data by the agent.
+- Report vulnerabilities privately through [SECURITY.md](SECURITY.md); do not open a public issue.
 
 ## Known limitations
 
@@ -197,7 +322,7 @@ lib/
   proxy.js        local/dev rewriting reverse proxy
   url.js          address-bar normalisation (mirrored in client.js)
   client.js       sidebar tab, carriers, overlay bridge, composer
-assets/           icon.svg, icon.png, icon-180.png, screenshots/
+assets/           icon.svg, icon.png, icon-180.png, banner.png, screenshots/
 test/             smoke tests and the preview/mockup harness
 docs/             DSH Web integration research (Catalan)
 ```
@@ -206,9 +331,11 @@ docs/             DSH Web integration research (Catalan)
 npm run check          # node --check on every source file
 npm test               # URL rules + proxy rewrite smoke tests
 npm run smoke          # host CDP smoke test (needs Chromium)
-npm run mockups        # re-render assets/screenshots (needs Chromium)
+npm run mockups        # re-render assets/banner.png and assets/screenshots
 dsh plugin --profile web add link:$PWD
 ```
+
+Release notes live in [`CHANGELOG.md`](CHANGELOG.md).
 
 The preview harness renders the real `lib/client.js` with a mock backend:
 
@@ -217,26 +344,13 @@ node test/preview/server.mjs
 # http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-## Screenshots
-
-All four images are mockups generated from [`test/preview/shell.html`](test/preview/shell.html) and [`test/preview/diagram.html`](test/preview/diagram.html):
-
-- the panel is the **real** `lib/client.js` running against the mock backend;
-- the storefront is **Northwind Supply**, an invented shop on the reserved `example.com` domain;
-- the conversation, session name and workspace are invented;
-- no screenshot of a real DSH window, account, page, customer, file path or token is used.
-
-The image list is declared in [`screenshots.json`](screenshots.json), which is what plugin storefronts read.
-
-| | |
-|---|---|
-| ![Annotating the place-order button](assets/screenshots/02-annotate.png) | ![Phone emulation preset](assets/screenshots/03-devices.png) |
+See [`test/preview/README.md`](test/preview/README.md) for every state, the full-window shell and the mockup pipeline.
 
 ## Market
 
 The [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) registry is the market source. Submission state:
 
-- [x] Repository is public and `dsh-plugin` topic is set.
+- [x] Repository is public and the `dsh-plugin` topic is set.
 - [x] `package.json` declares `dsh.bundle` and ships [`cordis.patch.yml`](cordis.patch.yml).
 - [x] Raster icon at `assets/icon-180.png` and storefront screenshots in [`screenshots.json`](screenshots.json).
 - [x] Entry drafted at [`market/entry.yml`](market/entry.yml).
@@ -244,20 +358,18 @@ The [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugi
 
 The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically, so an early PR is held, not rejected. This repository crossed its first day on 2026-11-06 at 15:45 UTC; until then the submission gate may report the age check as pending.
 
+## Contributing
+
+Contributions are welcome: bug reports, carrier fixes, documentation and mockup improvements. Start with [CONTRIBUTING.md](CONTRIBUTING.md), run `npm run check` and `npm test`, and read the screenshot privacy rule before adding images. This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). Security reports go through [SECURITY.md](SECURITY.md), not public issues.
+
+## Credits
+
+Forked from [`zengxiaolou/dsh-annotate-browser`](https://github.com/zengxiaolou/dsh-annotate-browser) (MIT): the CDP client, launcher, element picker and crop flow started there. This fork adds the official right-sidebar integration, the local/dev rewriting proxy, the two-carrier switch, annotation overlay, device emulation, EN/ES copy and the composer hand-off.
+
 ## License
 
 MIT. See [LICENSE](LICENSE); the original copyright notice is preserved.
 
 ---
 
-## Català
-
-**Un navegador al panell dret de DSH Web, amb anotacions que arriben al xat.**
-
-- Escriu `example.com` i s'obre `https://example.com/`; escriu `shop.local:5173` o `127.0.0.1:5173` i fa servir `http://`. Els esquemes que no són web (`mailto:`, `file:`, `javascript:`) es rebutgen.
-- Els llocs **locals/dev** (`localhost`, `*.local`, IP privades) passen per un proxy same-origin: es veuen natius, els botons funcionen i l'overlay pot llegir el DOM.
-- Els llocs **públics** es renderitzen amb un Chromium real al host via CDP: `X-Frame-Options` i CSP no els aturen, i es poden clicar i anotar igualment.
-- En mode **Annotate**, passa el ratolí per sobre (et diu `tag#id.class  240×44`), clica l'element, escriu la nota i insereix-la al composer.
-- La UI és en **anglès o castellà** segons l'idioma del perfil; la resta cau a anglès.
-
-Les imatges són **mockups** amb contingut inventat (botiga i xat ficticis, domini `example.com`): no mostren cap compte, pàgina ni dada real. Es regeneren amb `npm run mockups`.
+<p align="center">English · <a href="README.ca.md">Català</a> · <a href="#table-of-contents">Back to top ↑</a></p>

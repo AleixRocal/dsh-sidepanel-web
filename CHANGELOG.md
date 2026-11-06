@@ -4,6 +4,17 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Documentation
+
+- Rebuilt the README around a banner, status badges, a table of contents,
+  quick start, screenshots, a carrier table, FAQ and a dedicated privacy
+  section; added a full Catalan translation in `README.ca.md`.
+- Added `CODE_OF_CONDUCT.md` and linked it from the README and CONTRIBUTING.
+- The repository banner is generated from `test/preview/banner.html` by
+  `npm run mockups`.
+
 ## [0.3.0] — 2026-11-06
 
 ### Added

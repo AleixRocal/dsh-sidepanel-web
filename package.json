@@ -18,6 +18,10 @@
     "screenshots.json",
     "CHANGELOG.md",
     "README.md",
+    "README.ca.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "dsh": {

@@ -53,9 +53,16 @@ your own session.
 
 - Keep one concern per PR; describe the user-visible behaviour and the tests.
 - Run `npm run check` and `npm test` before pushing.
+- For user-visible changes, keep the English `README.md` and the Catalan
+  `README.ca.md` in sync (and the screenshots they reference).
 - Do not edit `data/plugins/` in the awesome-dsh-plugin repository from here;
   the draft entry lives at `market/entry.yml`.
 - Commits follow Conventional Commits (`fix:`, `feat:`, `docs:`, `chore:`).
+
+## Code of conduct
+
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Be kind,
+assume good faith, and never publish another person's private information.
 
 ## License
 

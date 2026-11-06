@@ -189,6 +189,7 @@ const server = http.createServer(async (req, res) => {
 
   if (p === "/harness.html") return sendFile(res, join(HERE, "harness.html"), "text/html; charset=utf-8");
   if (p === "/shell.html") return sendFile(res, join(HERE, "shell.html"), "text/html; charset=utf-8");
+  if (p === "/banner.html") return sendFile(res, join(HERE, "banner.html"), "text/html; charset=utf-8");
   if (p === "/diagram.html") return sendFile(res, join(HERE, "diagram.html"), "text/html; charset=utf-8");
   if (p === "/fixture-page.svg") return sendFile(res, SHOT, "image/svg+xml");
   if (p === "/fixture-page-mobile.svg") return sendFile(res, MOBILE, "image/svg+xml");

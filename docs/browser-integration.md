@@ -519,7 +519,9 @@ s'afegeix sol.
 ### 7.7 Imatges de documentació i entrada al market
 
 Les quatre imatges de `assets/screenshots/` es generen amb
-`test/preview/mockups.mjs` (1600×1000 CSS a 2×, PNG 3200×2000):
+`test/preview/mockups.mjs` (1600×1000 CSS a 2×, PNG 3200×2000). El banner del
+README surt del mateix script, des de `test/preview/banner.html`
+(`assets/banner.png`, 1600×420 a 2×):
 
 | Fitxer | Què mostra |
 | --- | --- |
@@ -542,7 +544,8 @@ Regles de privacitat que compleixen i que s'han de mantenir si es regeneren:
 - cap captura de la GUI real, cap compte, cap client, cap ruta personal, cap
   token: el contingut està fixat a `test/preview/shell.html`, `diagram.html` i
   `fixture-page*.svg`;
-- `screenshots.json` declara les quatre imatges per al storefront del market.
+- `screenshots.json` declara les quatre imatges per al storefront del market;
+  el banner no hi entra perquè no és una captura de producte.
 
 L'entrada del market és a `market/entry.yml` (una sola entrada; la descripció va
 entre cometes perquè conté `: ` i YAML no la llegeixi com una clau) i la PR

@@ -42,6 +42,7 @@ Query parameters:
   session name) with the real panel embedded in an iframe:
   `http://127.0.0.1:7788/shell.html?shot=hero|annotate|devices&w=760`
 - `diagram.html` — the “how it works” architecture image.
+- `banner.html` — the repository banner used at the top of both READMEs.
 
 Everything in these two pages is invented: Northwind Supply is a fictional
 storefront on the reserved `example.com` domain, and no real account, page,
@@ -51,7 +52,7 @@ customer, file path or screenshot of the live GUI is used.
 
 ```sh
 node test/preview/shoot.mjs     # panel states  → test/preview/shots/*.png (gitignored)
-node test/preview/mockups.mjs   # storefront     → assets/screenshots/*.png (committed)
+node test/preview/mockups.mjs   # banner + storefront → assets/banner.png + assets/screenshots/*.png (committed)
 ```
 
 Both need Node 22+ (the CDP client uses the global `WebSocket`) and a local
@@ -60,8 +61,8 @@ Playwright cache path is detected automatically, and both scripts launch Chrome
 with `--no-sandbox` so they also work in containers/CI.
 
 `mockups.mjs` starts the preview server itself if it is not already running; it
-writes 1600×1000 CSS pixels at 2× scale (3200×2000 PNG). `ONLY=02 npm run mockups`
-re-renders just the matching images.
+writes the 1600×420 banner and 1600×1000 screenshots at 2× scale (PNG).
+`ONLY=02 npm run mockups` re-renders just the matching images.
 
 ## Known limits
 

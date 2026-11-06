@@ -38,6 +38,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const SHOTS = [
   {
+    name: "banner",
+    url: `${BASE}/banner.html`,
+    title: "Repository banner",
+    width: 1600,
+    height: 420,
+    out: join(REPO, "assets/banner.png")
+  },
+  {
     name: "01-browser-panel",
     url: `${BASE}/shell.html?shot=hero&w=760`,
     title: "A browser next to the chat"
@@ -126,13 +134,18 @@ async function main() {
   const sid = page.sessionId;
   await client.send("Page.enable", {}, sid);
   await client.send("Runtime.enable", {}, sid);
-  await client.send(
-    "Emulation.setDeviceMetricsOverride",
-    { width: 1600, height: 1000, deviceScaleFactor: 2, mobile: false },
-    sid
-  );
 
   for (const shot of SHOTS.filter((s) => !process.env.ONLY || s.name.includes(process.env.ONLY))) {
+    await client.send(
+      "Emulation.setDeviceMetricsOverride",
+      {
+        width: shot.width || 1600,
+        height: shot.height || 1000,
+        deviceScaleFactor: 2,
+        mobile: false
+      },
+      sid
+    );
     await client.send("Page.navigate", { url: shot.url }, sid);
     let ready = false;
     for (let i = 0; i < 160; i += 1) {
@@ -162,9 +175,9 @@ async function main() {
       { format: "png", captureBeyondViewport: false },
       sid
     );
-    const file = join(OUT, `${shot.name}.png`);
+    const file = shot.out || join(OUT, `${shot.name}.png`);
     writeFileSync(file, Buffer.from(png.data, "base64"));
-    console.log(`  ✓ ${shot.name}.png  — ${shot.title}`);
+    console.log(`  ✓ ${file.replace(REPO + "/", "")}  — ${shot.title}`);
   }
 
   client.close();
