@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "Right-sidebar browser for DeepSeek Harness Web: any public site through CDP, local/dev pages through a same-origin proxy, device emulation, and element picks that become chat annotations.",
   "icon": "assets/icon.png",
