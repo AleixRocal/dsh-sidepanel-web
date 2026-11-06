@@ -356,7 +356,7 @@ The [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugi
 - [x] Entry drafted at [`market/entry.yml`](market/entry.yml).
 - [x] Pull request opened: [awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641) — one file, `data/plugins/AleixRocal__dsh-sidepanel-web.yml`.
 
-The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically, so an early PR is held, not rejected. This repository crossed its first day on 2026-11-06 at 15:45 UTC; until then the submission gate may report the age check as pending.
+The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically. The current gate verdict is exactly that: **0.8 / 1 day**, with no other problem. It clears by itself once the repository reaches 24 h at **2026-11-06 15:45 UTC**; no resubmission is needed.
 
 ## Contributing
 

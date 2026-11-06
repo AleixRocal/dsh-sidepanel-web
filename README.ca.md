@@ -353,7 +353,7 @@ El registre [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-d
 - [x] Entrada esborrany a [`market/entry.yml`](market/entry.yml).
 - [x] PR oberta: [awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641) — un fitxer, `data/plugins/AleixRocal__dsh-sidepanel-web.yml`.
 
-El registre valida l'edat del repo (≥ 1 dia) i torna a executar els gates antics automàticament, així que una PR primerenca queda retinguda, no rebutjada. Aquest repo va fer el primer dia el 2026-11-06 a les 15:45 UTC; fins llavors el gate pot reportar el check d'edat com a pendent.
+El registre valida l'edat del repo (≥ 1 dia) i torna a executar els gates antics automàticament. El veredicte actual és exactament això: **0,8 / 1 dia**, sense cap altre problema. Es neteja sol quan el repo arribi a les 24 h, el **2026-11-06 a les 15:45 UTC**; no cal tornar a enviar res.
 
 ## Contribuir
 
