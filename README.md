@@ -17,12 +17,14 @@
 </p>
 
 <p align="center">
-  English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a>
+  English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a> · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.zh.md">中文</a>
 </p>
 
 `dsh-sidepanel-web` adds a **Browser** tab to the right sidebar of DeepSeek Harness Web. It is a real browser next to your conversation, and it can turn any element on the page into a precise message for the agent.
 
 Pick the button, field or card you are talking about, write what should change, and insert it. The message carries the element's selector, its text, an HTML excerpt, its computed styles, its size and position, and one screenshot with the annotation pinned. The agent no longer has to guess which element you mean — and you no longer have to describe it with coordinates or a pile of screenshots.
+
+**Source:** [github.com/AleixRocal/dsh-sidepanel-web](https://github.com/AleixRocal/dsh-sidepanel-web) · **Package:** [npmjs.com/package/dsh-sidepanel-web](https://www.npmjs.com/package/dsh-sidepanel-web)
 
 > [!TIP]
 > **Two carriers, one flow.** Pages you build — `localhost`, `*.local`, private IPs, self-signed dev servers — go through a same-origin proxy and stay fully interactive. Public pages are rendered by a real Chromium on the host over CDP, so `X-Frame-Options` and CSP cannot block them. The panel chooses automatically; the switch is one click away.
@@ -417,4 +419,4 @@ MIT. See [LICENSE](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LIC
 
 ---
 
-<p align="center">English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a> · <a href="#table-of-contents">Back to top ↑</a></p>
+<p align="center">English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a> · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.zh.md">中文</a> · <a href="#table-of-contents">Back to top ↑</a></p>

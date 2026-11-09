@@ -12,7 +12,7 @@ All notable changes to this project. The format follows
   annotations that reach the chat, what the payload contains, why a DOM
   annotation beats a screenshot, and how the two carriers work. Added the
   step-by-step "How it feels", the payload example and the image-sizing
-  rationale; mirrored in the Catalan README.
+  rationale; mirrored in the Catalan and Chinese READMEs.
 - Updated the npm package description to match the README.
 
 ## [0.4.0] — 2026-11-09

@@ -17,12 +17,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.zh.md">中文</a>
 </p>
 
 `dsh-sidepanel-web` afegeix una pestanya **Navegador** al panell dret de DeepSeek Harness Web. És un navegador real al costat de la conversa, i pot convertir qualsevol element de la pàgina en un missatge precís per a l'agent.
 
 Tria el botó, el camp o la targeta de què parles, escriu què cal canviar i insereix-ho. El missatge porta el selector de l'element, el text, un fragment d'HTML, els estils calculats, la mida i la posició, i una captura amb l'anotació marcada. L'agent ja no ha d'endevinar a quin element et refereixes, i tu ja no has de descriure'l amb coordenades ni un munt de captures.
+
+**Codi:** [github.com/AleixRocal/dsh-sidepanel-web](https://github.com/AleixRocal/dsh-sidepanel-web) · **Paquet:** [npmjs.com/package/dsh-sidepanel-web](https://www.npmjs.com/package/dsh-sidepanel-web)
 
 > [!TIP]
 > **Dos portadors, un sol flux.** Les pàgines que construeixes — `localhost`, `*.local`, IP privades, servidors de desenvolupament amb certificats autosignats — passen per un proxy same-origin i continuen sent totalment interactives. Les pàgines públiques les renderitza un Chromium real al host via CDP, així que `X-Frame-Options` i CSP no les poden bloquejar. El panell tria sol; el commutador és a un clic.
@@ -420,4 +422,4 @@ MIT. Vegeu [LICENSE](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/L
 
 ---
 
-<p align="center"><a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català · <a href="#index">Torna a dalt ↑</a></p>
+<p align="center"><a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.zh.md">中文</a> · <a href="#índex">Torna a dalt ↑</a></p>
