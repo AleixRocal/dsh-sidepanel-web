@@ -4,6 +4,17 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] — 2026-11-09
+
+### Documentation
+
+- Rewrote the README around the main flow: a browser in the right sidebar, DOM
+  annotations that reach the chat, what the payload contains, why a DOM
+  annotation beats a screenshot, and how the two carriers work. Added the
+  step-by-step "How it feels", the payload example and the image-sizing
+  rationale; mirrored in the Catalan README.
+- Updated the npm package description to match the README.
+
 ## [0.4.0] — 2026-11-09
 
 ### Added
@@ -119,6 +130,7 @@ All notable changes to this project. The format follows
   proxy for local/dev pages.
 - English and Spanish UI.
 
+[0.4.1]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.2.5...v0.3.0

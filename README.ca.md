@@ -1,28 +1,31 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/banner.png" alt="dsh-sidepanel-web — un navegador al panell dret de DSH amb anotacions que arriben al xat" width="100%">
+  <img src="https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/banner.png" alt="dsh-sidepanel-web — un navegador al panell dret de DSH amb anotacions DOM que arriben al xat" width="100%">
 </p>
 
 <p align="center">
-  <strong>Un navegador al panell dret de DeepSeek Harness Web, amb anotacions que arriben al xat.</strong>
+  <strong>Un navegador al panell dret de DSH — anota qualsevol pàgina en el seu DOM i envia l'anotació al xat.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Última versió" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&label=release&display_name=tag"></a>
-  <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="npm package" src="https://img.shields.io/npm/v/dsh-sidepanel-web"></a>
+  <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="Paquet npm" src="https://img.shields.io/npm/v/dsh-sidepanel-web"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE"><img alt="Llicència MIT" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
   <img alt="DSH 0.2.1-rc.2 a 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
   <img alt="Node 22.19+" src="https://img.shields.io/badge/node-%E2%89%A522.19-339933?logo=nodedotjs&logoColor=white">
+  <a href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin"><img alt="Market: listed" src="https://img.shields.io/badge/market-listed-2ea44f"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · <strong>Català</strong>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català
 </p>
 
-`dsh-sidepanel-web` afegeix una pestanya **Navegador** al panell dret de DSH. Obre una pàgina al costat de la conversa, tria l'element del qual estàs parlant, escriu una nota i envia-la al composer amb el selector, els estils, la mida i un sol screenshot anotat.
+`dsh-sidepanel-web` afegeix una pestanya **Navegador** al panell dret de DeepSeek Harness Web. És un navegador real al costat de la conversa, i pot convertir qualsevol element de la pàgina en un missatge precís per a l'agent.
+
+Tria el botó, el camp o la targeta de què parles, escriu què cal canviar i insereix-ho. El missatge porta el selector de l'element, el text, un fragment d'HTML, els estils calculats, la mida i la posició, i una captura amb l'anotació marcada. L'agent ja no ha d'endevinar a quin element et refereixes, i tu ja no has de descriure'l amb coordenades ni un munt de captures.
 
 > [!TIP]
-> **Un panell, dos portadors.** Les pàgines locals/dev passen per un proxy same-origin i continuen sent totalment interactives. Qualsevol pàgina pública es renderitza amb un Chromium real via CDP, així que `X-Frame-Options` i CSP no l'aturen. El panell tria el portador segons la URL i el commutador és a un clic.
+> **Dos portadors, un sol flux.** Les pàgines que construeixes — `localhost`, `*.local`, IP privades, servidors de desenvolupament amb certificats autosignats — passen per un proxy same-origin i continuen sent totalment interactives. Les pàgines públiques les renderitza un Chromium real al host via CDP, així que `X-Frame-Options` i CSP no les poden bloquejar. El panell tria sol; el commutador és a un clic.
 
 ![DSH Web amb el panell Navegador obert al costat d'una conversa](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/01-browser-panel.png)
 
@@ -30,15 +33,18 @@
 
 ## Índex
 
-- [Per què](#per-què)
-- [Funcionalitats](#funcionalitats)
+- [Com es fa servir](#com-es-fa-servir)
+- [Què arriba al xat](#què-arriba-al-xat)
+- [Per què anotar en el DOM](#per-què-anotar-en-el-dom)
+- [Els dos portadors](#els-dos-portadors)
+- [Funcions](#funcions)
 - [Inici ràpid](#inici-ràpid)
-- [Captures](#captures)
 - [Ús](#ús)
 - [Configuració](#configuració)
 - [Com funciona](#com-funciona)
 - [Preguntes freqüents](#preguntes-freqüents)
-- [Privacitat de les captures](#privacitat-de-les-captures)
+- [Captures](#captures)
+- [Captures i privacitat](#captures-i-privacitat)
 - [Seguretat](#seguretat)
 - [Limitacions](#limitacions)
 - [Desenvolupament](#desenvolupament)
@@ -48,49 +54,82 @@
 - [Crèdits](#crèdits)
 - [Llicència](#llicència)
 
-## Per què
+## Com es fa servir
 
-Parlar d'una pàgina web amb un agent normalment vol dir captures, coordenades i descripcions vagues. Aquest panell manté la pàgina al costat de la conversa i converteix «aquest botó d'aquí» en una dada precisa: selector, text, classes, estils, posició i una captura retallada.
+1. **Obre la pàgina.** Desplega el panell dret i tria **Navegador**. Escriu `localhost:5173`, `shop.local` o `example.com`: l'esquema s'afegeix sol (`http://` per als hosts locals, `https://` per als públics).
+2. **Assenyala l'element.** Fes clic a **Anotar**, passa el ratolí per la pàgina i clica el botó, el camp o la targeta que vols. La targeta de nota mostra què has triat. Escriu què cal canviar: *fes aquesta acció primària sticky al mòbil*, *aquest camp hauria de ser obligatori*, *iguala aquesta targeta al disseny*.
+3. **Envia-ho al xat.** Tria **Afegeix a la llista** per continuar anotant i després **Insereix**. El composer rep el text de l'anotació i una captura anotada. Envia-ho a l'agent.
 
-Funciona en les dues direccions:
+Ni coordenades ni «el botó blau de baix». L'anotació diu com es diu l'element, on és i què vols canviar.
 
-- **Les pàgines que estàs construint** — `localhost`, `*.local`, IP privades, servidors de desenvolupament amb certificats autosignats — on el host de DSH pot arribar a la pàgina encara que el teu navegador no pugui. Passen pel proxy same-origin i es poden anotar.
-- **Qualsevol pàgina pública** — documentació, un competidor, un issue tracker, un staging amb login. Les renderitza un Chromium real al host via CDP; `X-Frame-Options` i CSP no les aturen.
+## Què arriba al xat
 
-## Funcionalitats
+Cada anotació és un bloc de text, seguit d'una imatge amb tots els picks marcats:
 
-**Navegació i portadors**
+```text
+[Annotation 1] button#save.primary
+· Selector: #save
+· Text: Save changes
+· HTML: <button id="save" class="btn primary" type="button">Save changes</button>
+· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); background=rgb(37, 99, 235); font=…; padding=12px 20px; radius=8px
+· Position: 132×40 @ (24, 680)
+· Page: Settings https://localhost:5173/settings
+· Note: Make this primary action sticky on mobile
+· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
+```
 
-- **Esquema automàtic a la barra d'adreces.** Escriu `example.com` i s'obre `https://example.com/`; escriu `shop.local:5173`, `127.0.0.1:5173` o `192.168.1.20:8080` i fa servir `http://`. Els esquemes que no són web (`mailto:`, `file:`, `javascript:`, `data:`) es rebutgen.
-- **Dos portadors, intercanviables per lloc.** La vista nativa té un botó *Vista remota (CDP)*; la vista CDP ofereix *Vista nativa (proxy)* per a hosts locals i *Força la vista nativa (insegur)* per a qualsevol altre origen. La tria es recorda per origen.
-- **Els enllaços del xat arriben aquí.** La pestanya registra `kind: "browser"`, així que l'opció «obre l'enllaç a la barra lateral» obre aquest navegador anotable; `params.url` es navega en arribar.
+> [!NOTE]
+> L'exemple mostra el payload amb la interfície en anglès. Amb la interfície en castellà, les etiquetes surten en castellà; els valors (selector, HTML, estils, posició) són els mateixos.
+
+- **El text és un punter que l'agent pot seguir.** Rep la identitat de l'element (tag, id, classes, selector), un fragment d'HTML, els estils calculats que normalment importen (display, position, colors, font, padding, radius), la mida i la posició, la URL i el títol de la pàgina, i la teva nota. Pot fer servir el selector i l'HTML per trobar el component al codi, i els estils i la posició per raonar sobre el layout.
+- **La imatge és el context.** En inserir, es captura una vista de la pàgina amb cada pick numerat i emmarcat. DSH mostra una imatge sola a 240 px del costat llarg (i diverses imatges en un mateix missatge com a quadrats de 64 px), així que una sola imatge per inserció és deliberada: hi veus la pàgina, els pins i el que els envolta, i pots obrir l'original a mida completa.
+- **Diversos picks, un sol missatge.** Afegeix tants elements com vulguis a la llista; Insereix envia tots els blocs d'anotació i una sola imatge amb tots els pins.
+
+## Per què anotar en el DOM
+
+Una captura mostra com es veu la pàgina. Una anotació DOM diu **què és** l'element.
+
+| Només una captura | Una anotació DOM |
+| --- | --- |
+| L'agent veu píxels i endevina a quin element et refereixes. | L'agent rep el tag, l'id, les classes, el selector i un fragment d'HTML. |
+| Li descrius la ubicació amb paraules. | L'agent rep els estils calculats, la mida i la posició. |
+| El context visual és clar. | El context visual hi és, amb pins numerats. |
+
+Totes dues coses importen. La imatge diu a l'agent on és l'element i què l'envolta; el payload DOM diu què és, de manera que pot trobar el codi, fer el canvi i raonar sobre el layout sense una ronda de «quin botó?». La nota hi afegeix la intenció: què vols canviar, no només què hi ha.
+
+## Els dos portadors
+
+El panell pot renderitzar una pàgina de dues maneres. Normalment no cal pensar-hi: l'elecció segueix la URL i es recorda per origen.
+
+| URL | Portador | Què et dona |
+| --- | --- | --- |
+| `localhost`, `*.localhost`, `*.local`, IP privades, loopback i link-local | **Natiu** — proxy same-origin | La pàgina i el seu DOM reals, totalment interactius, amb l'overlay d'anotació; accepta certificats autosignats; les galetes viuen en un pot per origen. |
+| Qualsevol altra pàgina `http(s)` | **Remot** — CDP | Un Chromium real al host renderitza la pàgina; els fotogrames i l'entrada es transmeten al panell. Funciona amb `X-Frame-Options`, CSP i logins del perfil del navegador. |
+
+**Portador natiu.** DSH baixa la pàgina, en reescriu les URL i hi injecta un petit shim i l'overlay d'anotació, de manera que la pàgina queda same-origin amb DSH i es pot inspeccionar i clicar com una pestanya normal. HTML, CSS, JS, imatges i crides d'API passen pel proxy; `fetch`, `XMLHttpRequest`, `history.pushState`/`replaceState` i `window.open` s'hi queden; les URL de `<script type="importmap">` es reescriuen; els noms d'acció com `data-action="family"` no es toquen. Les WebSockets/HMR no es proxien.
+
+**Portador remot.** El Chromium del host carrega la pàgina de veritat i envia els fotogrames al panell; clics, roda, escriptura i arrossegaments es reenvien. És el portador per a llocs públics, pàgines que es neguen a ser incrustades i llocs amb login.
+
+**Commutar.** La vista nativa té un botó **Vista remota (CDP)**. La vista remota ofereix **Vista nativa (proxy)** per a hosts locals i **Força la vista nativa (insegur)** per a qualsevol altre origen, recordat per origen. Forçar una pàgina pública pel proxy comparteix l'origen de DSH amb aquella pàgina: fes-ho només amb llocs de confiança.
+
+## Funcions
+
+**Al panell**
+
+- **Una pestanya de navegador real** (`kind: "browser"`), de manera que l'opció «obre l'enllaç a la barra lateral» del xat obre aquest navegador; `params.url` es navega en arribar.
+- **Esquema automàtic a la barra d'adreces.** `example.com` es converteix en `https://example.com/`; `shop.local:5173`, `127.0.0.1:5173` o `192.168.1.20:8080` fan servir `http://`. Els esquemes que no són web (`mailto:`, `file:`, `javascript:`, `data:`) es rebutgen.
 - **Porta el teu navegador.** Apunta `cdpUrl`/`wsUrl` a qualsevol Chrome amb `--remote-debugging-port`, deixa que el plugin en descobreixi un o deixa que n'arrenqui un amb perfil persistent.
+- **Emulació de dispositiu.** Responsive (s'ajusta al panell), escriptori 1280×800, portàtil 1440×900, tauleta 768×1024 (UA d'iPad), mòbil 390×844 (UA d'iPhone) i Android 412×915, amb touch i `devicePixelRatio` coherent.
+- **Interfície en anglès i castellà** via `ctx.locale`; altres idiomes cauen a l'anglès.
 
-**El portador natiu (local/dev)**
+**Anotació**
 
-- HTML, CSS, JS, imatges i crides API es queden a l'origen de DSH gràcies al proxy reescriptor.
-- Un petit shim manté `fetch`, `XMLHttpRequest`, `history.pushState`/`replaceState` i `window.open` al proxy.
-- S'accepten certificats autosignats per a hosts locals.
-- Les URL de `<script type="importmap">` (imports i scopes) es reescriuen perquè les apps de mòduls ES continuïn carregant.
-- Només es reescriuen atributs que són URL de debò: noms d'acció com `data-action="family"` no es toquen.
-- Les galetes es guarden en un pot per origen; la galeta de sessió de DSH no s'envia mai al destí.
-
-**El portador remot (pàgines públiques)**
-
-- Un Chromium real renderitza la pàgina al host i n'emet fotogrames; clics, roda, teclat i arrossegaments es reenvien.
-- Funciona en llocs que prohibeixen ser incrustats (`X-Frame-Options`/`frame-ancestors`, CSP).
-- Els logins i galetes són els del perfil de navegador que li indiques.
-
-**Anotacions i dispositius**
-
-- Inspector en passar el ratolí: `tag#id.class  240×44  [role]`.
-- Selecció d'element amb selector, text, classes, estils, posició, fragment HTML i URL de la pàgina.
-- Pins numerats, notes i una captura retallada per selector.
-- Lliurament al composer amb `InputActions.insertText`, sense substituir l'esborrany.
-- **Una sola imatge anotada viatja amb l'Insert.** Cada Insert adjunta una sola captura del viewport amb cada element triat marcat amb el seu pin, així el xat mostra la pàgina anotada en lloc de retalls minúsculs per element (DSH limita una imatge sola a 240px i renderitza diverses imatges com a quadrats de 64px). El text continua portant cada selector, fragment DOM, estils, posició i camí del retall.
-- **Esc surt del mode d'anotació** des de la pàgina o des de la barra; si hi ha una targeta de nota oberta, primer la tanca.
-- Emulació de dispositiu: adaptatiu (s'ajusta al panell), escriptori 1280×800, portàtil 1440×900, tauleta 768×1024 (UA d'iPad), mòbil 390×844 (UA d'iPhone) i Android 412×915 — amb tàctil real i `devicePixelRatio` corresponent.
-- UI en anglès i castellà via `ctx.locale`; altres idiomes cauen a l'anglès.
+- **Inspector en passar el ratolí:** `tag#id.class  240×44  [role]`, per veure què estàs a punt de triar.
+- **Selecció d'element** amb selector, text, classes, fragment d'HTML, estils calculats, mida/posició i URL de la pàgina.
+- **Pins numerats i notes.** Guarda diversos picks a la llista i insereix-los junts.
+- **Lliurament al composer** amb `InputActions.insertText`, de manera que l'anotació s'afegeix al cursor sense substituir l'esborrany.
+- **Una imatge anotada** per inserció, amb tots els picks marcats — no un retall minúscul per element.
+- **Esc surt del mode d'anotació** des de la pàgina o la barra; si hi ha una nota oberta, es tanca primer.
 
 ## Inici ràpid
 
@@ -98,7 +137,7 @@ Funciona en les dues direccions:
 
 - DSH **0.2.1-rc.2** o superior, per sota de `0.3.0` (perfil Web).
 - Node.js **22.19+**.
-- Un navegador basat en Chromium al host. El plugin detecta Chrome/Chromium; la caché de Chromium de Playwright també serveix.
+- Un navegador basat en Chromium al host. El plugin detecta Chrome/Chromium; la caché de Chromium de Playwright també funciona.
 
 ### Instal·lació
 
@@ -111,23 +150,23 @@ dsh plugin --profile web add github:AleixRocal/dsh-sidepanel-web
 
 # o des d'un clon local, mentre desenvolupes
 git clone https://github.com/AleixRocal/dsh-sidepanel-web
-dsh plugin --profile web add link:/ruta/absoluta/a/dsh-sidepanel-web
+dsh plugin --profile web add link:/absolute/path/to/dsh-sidepanel-web
 ```
 
-Reinicia `dsh web` un cop i refresca la GUI. La pestanya **Navegador** apareix a la guia del panell dret.
+Reinicia `dsh web` una vegada i refresca la GUI. La pestanya **Navegador** apareix a la guia del panell dret.
 
 ### Primera pàgina
 
 1. Desplega el panell dret i tria **Navegador**.
 2. Escriu `example.com` i prem **Enter**. El panell obre `https://example.com/`; l'esquema s'afegeix sol.
-3. Clica **Annotate**, passa el ratolí, clica un element, escriu la nota i tria **Insert**.
+3. Fes clic a **Anotar**, passa el ratolí, clica un element, escriu la nota i tria **Insereix**.
 
 > [!NOTE]
-> Si no troba cap navegador als ports CDP habituals, el plugin arrenca un Chromium headless dedicat amb perfil persistent. Només cal `chromePath` si la detecció automàtica no troba el binari.
+> Si no troba cap navegador als ports CDP habituals, el plugin arrenca un Chromium headless dedicat amb un perfil persistent. Només cal `chromePath` si la detecció automàtica falla.
 
-### Fer servir el teu navegador
+### Fes servir el teu navegador
 
-Per reutilitzar el navegador que ja fas servir (mateixes galetes i logins), exposa el seu port CDP i apunta-hi el plugin:
+Per reutilitzar el navegador que ja tens obert (amb les mateixes galetes i sessions), exposa'n el port CDP i apunta-hi el plugin — sense instal·lacions separades:
 
 ```sh
 google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/chrome-dsh" &
@@ -139,75 +178,51 @@ google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/chrome
     cdpUrl: http://127.0.0.1:9222   # o wsUrl: ws://127.0.0.1:9222/devtools/browser/…
 ```
 
-Chrome 136+ no deixa consultar `/json/version` al perfil per defecte, d'aquí el `--user-data-dir` separat. Sense `cdpUrl`/`wsUrl`, el plugin prova 9222–9225 i 9333, després `~/.local/state/dsh-sidepanel-web/browser.json` i finalment el fitxer del pont ego.
-
-## Captures
-
-| | |
-| --- | --- |
-| ![Anotant el botó de fer la comanda](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/02-annotate.png) | ![Preset d'emulació de telèfon](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/03-devices.png) |
-| **Tria, nota, envia.** El pin cau sobre l'element i la targeta prepara el payload del composer. | **Emulació de dispositiu.** Escriptori, portàtil, tauleta, iPhone i Android amb tàctil i DPR. |
-
-![Com funcionen els dos portadors i el camí de l'anotació](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/04-how-it-works.png)
-
-Totes les captures són mockups generats amb [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html) i [`test/preview/diagram.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/diagram.html): el panell és el client real, la botiga és la **Northwind Supply** fictícia al domini reservat `example.com`, i no s'hi fa servir cap compte, pàgina ni dada de client real. Vegeu [Privacitat de les captures](#privacitat-de-les-captures).
+Chrome 136+ es nega a exposar `/json/version` al perfil per defecte; per això cal un `--user-data-dir` separat. Sense `cdpUrl`/`wsUrl`, el plugin prova 9222–9225 i 9333, després `~/.local/state/dsh-sidepanel-web/browser.json` i finalment el fitxer del pont d'ego.
 
 ## Ús
 
 1. Obre una sessió, desplega el panell dret i tria **Navegador**.
 2. Escriu una URL a la barra d'adreces.
-   - `example.com` → `https://example.com/` (esquema afegit).
-   - `localhost:3000`, `shop.local`, `192.168.1.20:8080` → `http://` perquè els servidors de desenvolupament no solen tenir TLS.
-   - **Host local/dev**: la pàgina passa pel proxy de DSH i és totalment interactiva.
-   - **Host públic**: la renderitza el Chromium del host i s'emet al panell. Fes servir **Vista nativa** només per a llocs locals.
-3. Clica **Annotate** i passa el ratolí. L'inspector mostra el tipus i la mida de l'element.
-4. Clica l'element, escriu la nota i tria **Add to list**.
-5. Tria **Insert** per posar les anotacions al composer; envia el missatge.
+   - `example.com` → `https://example.com/` (l'esquema s'afegeix sol).
+   - `localhost:3000`, `shop.local`, `192.168.1.20:8080` → `http://`, perquè els servidors de desenvolupament poques vegades tenen TLS.
+   - Un host local/dev passa pel proxy de DSH i continua sent interactiu; un host públic el renderitza el Chromium del host i s'envia al panell.
+3. Fes clic a **Anotar** i passa el ratolí. L'inspector mostra el tipus i la mida de l'element.
+4. Fes clic a l'element, escriu la nota i tria **Afegeix a la llista**. Repeteix per cada element que vulguis incloure.
+5. Tria **Insereix** per posar les anotacions i la imatge anotada al composer; envia el missatge.
+6. Fes servir el menú **⋯** per als presets de dispositiu, per netejar els pins o per canviar entre **Vista nativa (proxy)** i **Vista remota (CDP)**. La tria es recorda per origen.
 
 | URL | Portador | Per què |
 | --- | --- | --- |
 | `example.com`, qualsevol lloc públic | Screencast CDP | Funciona encara que el lloc enviï `X-Frame-Options`/CSP. |
 | `localhost`, `*.local`, IP privades/loopback/link-local | Proxy same-origin | Render natiu, accés al DOM i anotació sense screencast. |
 
-Cada anotació té aquesta forma:
-
-```text
-[Annotation 1] button#save.primary
-· Selector: #save
-· Text: Save changes
-· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); …
-· Position: 132×40 @ (24, 680)
-· Page: Settings https://localhost:5173/settings
-· Note: Make this primary action sticky on mobile
-· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
-```
-
 ## Configuració
 
-Opcions al patch del perfil, a la fila del plugin:
+Les opcions es posen al patch del perfil, sota la fila del plugin:
 
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml
 - id: dsh-sidepanel-web
   config:
-    chromePath: /ruta/al/chrome
+    chromePath: /path/to/chrome
     headless: true
 ```
 
-| Clau | Valor per defecte | Significat |
+| Clau | Per defecte | Significat |
 | --- | --- | --- |
-| `chromePath` | autodetecció | Ruta absoluta a un navegador basat en Chromium. |
+| `chromePath` | auto-detect | Ruta absoluta a un navegador basat en Chromium. |
 | `headless` | `true` | Arrenca el navegador del host sense finestra. |
 | `autoLaunch` | `true` | Arrenca un navegador quan no hi ha cap endpoint CDP. |
 | `wsUrl` | buit | Endpoint CDP explícit (`ws://127.0.0.1:port/devtools/browser/…`). |
-| `cdpUrl` | buit | Endpoint HTTP de depuració d'un navegador existent, p. ex. `http://127.0.0.1:9222`; es resol amb `/json/version`. |
-| `profileDir` | `~/.local/share/dsh-sidepanel-web/profile` | Directori del perfil (persistent: els logins sobreviuen reinicis). |
+| `cdpUrl` | buit | Endpoint HTTP de depuració d'un navegador existent, p. ex. `http://127.0.0.1:9222`; es resol via `/json/version`. |
+| `profileDir` | `~/.local/share/dsh-sidepanel-web/profile` | Directori del perfil del navegador (persistent: les sessions sobreviuen als reinicis). |
 | `homeUrl` | `https://www.deepseek.com` | Primera pàgina quan arrenca el navegador. |
 | `device` | `responsive` | Preset d'emulació: `responsive`, `desktop`, `laptop`, `tablet`, `mobile`, `android`. |
-| `pollMs` | `1200` | Interval de captura per al mode d'stream antic. |
-| `quality` | `82` | Qualitat JPEG per al mode d'stream antic. |
-| `streamMode` | `screencast` | `screencast` o `poll` (mode d'stream antic). |
-| `streamFps` | `15` | Límit de fotogrames per al mode d'stream antic. |
+| `pollMs` | `1200` | Interval de sondeig de captures per al mode stream llegat. |
+| `quality` | `82` | Qualitat JPEG per al mode stream llegat. |
+| `streamMode` | `screencast` | `screencast` o `poll` (mode stream llegat). |
+| `streamFps` | `15` | Límit de fotogrames per al mode stream llegat. |
 
 ## Com funciona
 
@@ -217,28 +232,32 @@ DSH Web GUI
        ├─ Portador A · natiu (local/dev)
        │    iframe del proxy ──► /api/sidepanel-web/p/<origen>/<camí>
        │                         └─ proxy reescriptor (HTML/CSS/JS/API)
-       │                              └─ overlay: tria → nota → captura
+       │                              └─ overlay: pick → nota → imatge composta
        └─ Portador B · remot (qualsevol pàgina)
             Chromium CDP (host) ──► fotogrames + entrada reenviada
-                 └─ mateix panell, mateixa anotació
+                 └─ mateix panell, mateix flux d'anotació
 
-  anotacions ──► composer (InputActions.insertText)
+  anotacions + una captura amb pins ──► composer (InputActions.insertText)
 ```
 
-- **Meitat host** (`lib/index.js`, `lib/service.js`, `lib/cdp.js`, `lib/launcher.js`): rutes, cicle de vida de Chromium, CDP, captures i retalls.
-- **Proxy** (`lib/proxy.js`): descarrega pàgines locals/dev, reescriu URL, injecta el shim i l'overlay, i manté un pot de galetes per origen.
-- **Pàgina/overlay** (`lib/page.js`): portador de pàgina renderitzada i overlay d'anotació.
-- **Regles d'URL** (`lib/url.js`): detecció d'esquema compartida amb el client (mirall dins `lib/client.js`, verificat per `test/url-smoke.mjs`).
-- **Meitat client** (`lib/client.js`): pestanya, barra d'adreces, portadors natiu/remot, targeta de nota, inserció al composer i diccionaris EN/ES.
+La **meitat host** posseeix el Chromium, el proxy, les captures i el render compost; la **meitat client** és la pestanya que veus. El portador natiu manté la pàgina same-origin perquè l'overlay en pugui llegir el DOM i tu la puguis clicar; el portador remot envia un navegador real i reenvia la teva entrada. Tots dos alimenten el mateix payload d'anotació, així que el xat no depèn del portador que hagis fet servir.
 
-La recerca completa sobre la integració amb DSH Web (slots, registre de pestanyes, portadors, descoberta de navegador) és a [`docs/browser-integration.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/browser-integration.md).
+En prémer **Insereix**, el host renderitza una vista de la pàgina, torna a posar el pin de cada pick (per selector en una pàgina nativa, des de la pàgina viva en CDP) i retorna un sol PNG. Si aquest render falla, s'adjunta el retall del primer element, de manera que el missatge sempre té una imatge i tot el text.
+
+- **Meitat host** (`lib/index.js`, `lib/service.js`, `lib/cdp.js`, `lib/launcher.js`): rutes, cicle de vida del Chromium, CDP, captures, retalls, render compost.
+- **Proxy** (`lib/proxy.js`): baixa pàgines local/dev, reescriu URL, injecta el shim i l'overlay i manté un pot de galetes per origen.
+- **Pàgina/overlay** (`lib/page.js`): portador de pàgina renderitzada i overlay d'anotació.
+- **Regles d'URL** (`lib/url.js`): detecció d'esquema compartida amb el client (mirall dins `lib/client.js` i verificada per `test/url-smoke.mjs`).
+- **Meitat client** (`lib/client.js`): la pestanya, la barra d'adreces, els portadors natiu/remot, la targeta de nota, la inserció al composer i els diccionaris EN/ES.
+
+Una explicació més profunda de la integració amb DSH Web (slots, registre de pestanyes, portadors, descoberta de navegador) és a [`docs/browser-integration.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/browser-integration.md).
 
 ## Preguntes freqüents
 
 <details>
-<summary><strong>He escrit <code>example.com</code> i s'ha obert <code>https://example.com/</code>. Puc forçar <code>http://</code>?</strong></summary>
+<summary><strong>He escrit <code>example.com</code> i ha obert <code>https://example.com/</code>. Puc forçar <code>http://</code>?</strong></summary>
 
-Sí: escriu l'esquema explícitament (`http://example.com`). Els hosts locals/dev (`localhost`, `*.local`, IP privades, loopback i link-local) ja fan servir `http://` per defecte perquè els servidors de desenvolupament no solen tenir TLS. Els esquemes que no són web es rebutgen.
+Sí: escriu l'esquema explícitament (`http://example.com`). Els hosts local/dev (`localhost`, `*.local`, adreces privades, loopback i link-local) ja fan servir `http://` per defecte perquè els servidors de desenvolupament poques vegades tenen TLS. Els esquemes que no són web es rebutgen.
 </details>
 
 <details>
@@ -251,6 +270,12 @@ Les pàgines públiques van pel portador CDP, no per un iframe, així que `X-Fra
 <summary><strong>Puc forçar la vista nativa per a un lloc públic?</strong></summary>
 
 Sí, explícitament: obre el lloc, clica el menú **⋯** i tria **Força la vista nativa (insegur)**. La tria es recorda per origen, així que cada pestanya nova a aquell origen obre el portador natiu, i la pàgina esdevé proxificada i anotable com una de local. Fes-ho només amb llocs de confiança: la pàgina proxificada comparteix l'origen de DSH i pot llegir el DOM del panell i cridar l'API de DSH amb la teva sessió. La política per defecte no canvia: local/dev → natiu, públic → CDP.
+</details>
+
+<details>
+<summary><strong>Per què el xat mostra una imatge i no un retall per anotació?</strong></summary>
+
+Perquè DSH dimensiona les imatges segons quantes n'arriben juntes: una imatge sola es mostra a 240 px del costat llarg i mai s'amplia per sobre de la seva mida natural, mentre que diverses imatges en un mateix missatge esdevenen quadrats de 64 px. Un retall d'un botó petit es veuria minúscul igualment. Per això Insereix envia una sola vista de la pàgina amb tots els picks marcats, i manté la ruta del retall de cada element al text.
 </details>
 
 <details>
@@ -284,18 +309,31 @@ Només el seu contenidor. L'overlay no pot travessar un iframe cross-origin ni u
 </details>
 
 <details>
-<summary><strong>Com es generen les captures? S'hi fa servir cap dada real?</strong></summary>
+<summary><strong>Com es generen les captures i s'hi fa servir cap dada real?</strong></summary>
 
-Amb `npm run mockups`, a partir del client real i un backend mock. Totes les imatges fan servir contingut inventat (botiga fictícia, `example.com` reservat, conversa inventada); no es captura cap finestra de DSH, compte, client, ruta ni token real. Vegeu [Privacitat de les captures](#privacitat-de-les-captures).
+Amb `npm run mockups`, a partir del client real i un backend mock. Totes les imatges fan servir contingut inventat (botiga fictícia, `example.com` reservat, conversa inventada); no es captura cap finestra de DSH, compte, client, ruta ni token real. Vegeu [Captures i privacitat](#captures-i-privacitat).
 </details>
 
-## Privacitat de les captures
+## Captures
 
-Les captures formen part del lliurable, així que tenen una regla dura: **cap dada d'usuari real**.
+| | |
+| --- | --- |
+| ![Anotant el botó de fer la comanda](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/02-annotate.png) | ![Preset d'emulació de mòbil](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/03-devices.png) |
+| **Tria, nota, envia.** El pin cau damunt de l'element i la targeta de nota prepara el payload del composer. | **Emulació de dispositiu.** Escriptori, portàtil, tauleta, iPhone i Android amb touch i DPR. |
 
-- El panell és el `lib/client.js` real; el voltant (conversa, espai de treball, sessió) és HTML estàtic a [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html).
+![Com funcionen els dos portadors i el camí de l'anotació](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/04-how-it-works.png)
+
+<p align="center"><em>El diagrama: una pàgina local/dev pel proxy same-origin, una pàgina pública per CDP, i totes dues alimentant el mateix payload d'anotació.</em></p>
+
+Totes les captures són mockups generats des de [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html) i [`test/preview/diagram.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/diagram.html): el panell és el client real, la botiga és la fictícia **Northwind Supply** al domini reservat `example.com`, i no s'hi fa servir cap compte, pàgina ni dada de client real. Vegeu [Captures i privacitat](#captures-i-privacitat).
+
+## Captures i privacitat
+
+Les captures formen part del lliurament, així que segueixen una regla dura: **cap dada real d'usuari**.
+
+- El panell és el `lib/client.js` real; el shell del voltant (conversa, espai de treball, sessió) és HTML estàtic a [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html).
 - La botiga és **Northwind Supply**, una botiga fictícia al domini reservat `example.com`.
-- Cap finestra de DSH, compte, pàgina, client, ruta ni token real apareix a cap imatge.
+- Cap finestra de DSH, compte, pàgina, client, ruta ni token real no apareix a cap imatge.
 - [`screenshots.json`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/screenshots.json) declara les quatre imatges de botiga per als marketplaces de plugins.
 - Es regeneren amb `npm run mockups`; el banner es renderitza des de [`test/preview/banner.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/banner.html).
 
@@ -305,7 +343,7 @@ Les captures formen part del lliurable, així que tenen una regla dura: **cap da
 - El proxy reescriptor només accepta **hosts locals/dev** (localhost, `*.local`, rangs privats, loopback i link-local). Les URL públiques es rebutgen i les gestiona el portador CDP, tret que l'origen s'hagi forçat explícitament a la vista nativa.
 - L'iframe natiu corre amb sandbox (`allow-scripts allow-forms allow-same-origin allow-popups` per a pàgines locals). `allow-same-origin` és necessari perquè el document del proxy conservi galetes i API; també vol dir que una pàgina proxificada comparteix l'origen de DSH. Només proxifica pàgines de confiança.
 - **Forçar la vista nativa és un override explícit.** Deixa passar un origen públic pel proxy same-origin; aquella pàgina comparteix l'origen de DSH (DOM, galetes, crides a l'API). La política per defecte continua rebutjant hosts públics. Força només llocs de confiança.
-- El navegador del host fa servir un perfil dedicat i ignora errors de certificat dels servidors locals autosignats. El portador CDP té les capacitats del navegador al qual l'apuntes.
+- El navegador del host fa servir un perfil dedicat i ignora errors de certificat (necessari per als servidors locals autosignats). El portador CDP té les capacitats del navegador al qual l'apuntes.
 - El text de les anotacions i el contingut de la pàgina són dades no confiables per a l'agent.
 - Reporta vulnerabilitats en privat via [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md); no obris un issue públic.
 
@@ -316,38 +354,38 @@ Les captures formen part del lliurable, així que tenen una regla dura: **cap da
 - **WebSocket/HMR no es proxien** al portador natiu. Els servidors de desenvolupament serveixen la pàgina, però el hot reload pot no funcionar; canvia a la vista CDP.
 - **Galetes** al portador natiu viuen en un pot per origen; alguns fluxos de login poden fallar. El portador CDP fa servir el perfil del navegador.
 - **Iframes cross-origin i shadow DOM tancat** no es poden anotar; només el contenidor.
-- **Els retalls** es fan per selector a la pàgina del host; un estat dinàmic pot diferir del fotograma que vas veure.
-- **La imatge anotada és un render nou al host** (un viewport de 1200×800, o la pàgina CDP en directe), així que un estat que només vivia al panell —un modal obert, un formulari a mig omplir— pot no aparèixer-hi. El text conserva cada element triat, el seu fragment DOM i el camí del retall.
+- **La imatge anotada és un render fresc al host** (un viewport de 1200 px d'ample que creix per encabir els picks, o la pàgina CDP en viu), així que un estat que només vivia al panell — un modal obert, un formulari a mitges — pot no aparèixer-hi. El text conserva cada pick, el seu fragment d'HTML i la ruta del retall.
 - **La latència CDP** depèn del host i de la pàgina; el screencast té un límit de 15 fps per defecte.
-- **Alfa:** les API i el comportament poden canviar.
+- **Alpha:** les API i el comportament poden canviar.
 
 ## Desenvolupament
 
 ```text
 lib/
-  index.js        plugin host: rutes, settings, registre del proxy
-  service.js      servei CDP: estat, navegació, captures, elementAt, retall
+  index.js        plugin host: rutes, ajustos, registre del proxy
+  service.js      servei CDP: estat, navegació, captures, retall, compost
   cdp.js          client CDP sense dependències
-  launcher.js     descoberta/arrencada de Chromium (container-safe, certificats)
-  page.js         portador de pàgina + overlay d'anotació
+  launcher.js     descoberta/arrencada de Chromium (container-safe, ignora errors de certificat)
+  page.js         portador de pàgina renderitzada + overlay d'anotació
   proxy.js        proxy invers reescriptor per a local/dev
-  url.js          normalització d'adreces (mirall a client.js)
+  url.js          normalització de la barra d'adreces (mirall a client.js)
   client.js       pestanya, portadors, pont de l'overlay, composer
 assets/           icon.svg, icon.png, icon-180.png, banner.png, screenshots/
 test/             smoke tests i harness de preview/mockups
-docs/             recerca de la integració amb DSH Web
+docs/             recerca d'integració amb DSH Web (català)
 ```
 
 ```bash
 npm run check          # node --check de tots els fitxers font
 npm test               # regles d'URL + proves de reescriptura del proxy
-npm run test:ui        # regressions d'Esc i d'adjunts d'imatge (necessita Chromium)
+npm run test:ui        # Esc, inserció nativa i adjunts compostos (necessita Chromium)
+npm run test:composite # render compost real amb pins (necessita Chromium)
 npm run smoke          # smoke test del host amb CDP (necessita Chromium)
 npm run mockups        # regenera assets/banner.png i assets/screenshots
 dsh plugin --profile web add link:$PWD
 ```
 
-Les notes de versió són a [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md).
+Les notes de versió viuen a [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md).
 
 El harness de preview renderitza el `lib/client.js` real amb un backend mock:
 
@@ -356,19 +394,17 @@ node test/preview/server.mjs
 # http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-Vegeu [`test/preview/README.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/README.md) per a tots els estats, la shell de finestra completa, el test de comportament i el pipeline de mockups.
+Vegeu [`test/preview/README.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/README.md) per a cada estat, el shell de finestra completa, el test de comportament i el pipeline de mockups.
 
 ## Market
 
-El registre [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) és la font del market. Estat del lliurament:
+Listat a [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) (PR [#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641), fusionat el 2026-11-08):
 
-- [x] Repo públic i topic `dsh-plugin`.
+- [x] El repositori és públic i el topic `dsh-plugin` està posat.
 - [x] `package.json` declara `dsh.bundle` i inclou [`cordis.patch.yml`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/cordis.patch.yml).
-- [x] Icona raster a `assets/icon-180.png` i captures a [`screenshots.json`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/screenshots.json).
-- [x] Entrada esborrany a [`market/entry.yml`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/market/entry.yml).
-- [x] PR oberta: [awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641) — un fitxer, `data/plugins/AleixRocal__dsh-sidepanel-web.yml`.
-
-El registre valida l'edat del repo (≥ 1 dia) i torna a executar els gates antics automàticament. El veredicte actual és exactament això: **0,8 / 1 dia**, sense cap altre problema. Es neteja sol quan el repo arribi a les 24 h, el **2026-11-06 a les 15:45 UTC**; no cal tornar a enviar res.
+- [x] Icona raster a `assets/icon-180.png` i captures de botiga a [`screenshots.json`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/screenshots.json).
+- [x] Entrada a [`market/entry.yml`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/market/entry.yml).
+- [x] Paquet publicat com a [`dsh-sidepanel-web`](https://www.npmjs.com/package/dsh-sidepanel-web) a npm.
 
 ## Contribuir
 
@@ -376,12 +412,12 @@ Les contribucions són benvingudes: errors, arreglos de portadors, documentació
 
 ## Crèdits
 
-Fork de [`zengxiaolou/dsh-annotate-browser`](https://github.com/zengxiaolou/dsh-annotate-browser) (MIT): el client CDP, el launcher, el selector d'elements i el flux de retall hi van començar. Aquest fork afegeix la integració oficial al panell dret, el proxy reescriptor local/dev, el commutador de portadors, l'overlay d'anotació, l'emulació de dispositiu, la UI EN/ES i el lliurament al composer.
+Fork de [`zengxiaolou/dsh-annotate-browser`](https://github.com/zengxiaolou/dsh-annotate-browser) (MIT): el client CDP, el launcher, el selector d'elements i el flux de retall hi van començar. Aquest fork afegeix la integració oficial al panell dret, el proxy reescriptor local/dev, el commutador de portadors, l'overlay d'anotació, l'emulació de dispositiu, la UI EN/ES, la imatge anotada composta i el lliurament al composer.
 
 ## Llicència
 
-MIT. Vegeu [LICENSE](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE); el copyright original es conserva.
+MIT. Vegeu [LICENSE](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE); la nota de copyright original es conserva.
 
 ---
 
-<p align="center"><a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català · <a href="#índex">Torna a dalt ↑</a></p>
+<p align="center"><a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.md">English</a> · Català · <a href="#index">Torna a dalt ↑</a></p>

@@ -1,8 +1,8 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
-  "description": "Right-sidebar browser for DeepSeek Harness Web: any public site through CDP, local/dev pages through a same-origin proxy, device emulation, and element picks that become chat annotations.",
+  "description": "A browser in the DSH right sidebar: annotate any page in its DOM and send the annotation to the chat. Local/dev pages stay interactive through a same-origin proxy; public pages render over CDP.",
   "icon": "assets/icon.png",
   "author": "Aleix Rocal",
   "exports": {
@@ -71,6 +71,7 @@
     "deepseek-harness",
     "cordis",
     "browser",
+    "dom",
     "sidebar",
     "annotation",
     "cdp",
