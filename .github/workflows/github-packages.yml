@@ -1,0 +1,75 @@
+name: Publish to GitHub Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Scoped npm mirror
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js and the GitHub Packages registry
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          registry-url: https://npm.pkg.github.com
+          scope: "@aleixrocal"
+
+      - name: Prepare the scoped mirror
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          # GitHub Packages only accepts scoped npm packages, so the mirror
+          # uses @aleixrocal/dsh-sidepanel-web. The bundle row must point at the
+          # same scoped package or DSH cannot resolve the plugin.
+          npm pkg set name="@aleixrocal/dsh-sidepanel-web"
+          sed -i 's/name: "dsh-sidepanel-web"/name: "@aleixrocal\/dsh-sidepanel-web"/' cordis.patch.yml
+          node <<'NODE'
+          const fs = require("node:fs");
+          let readme = fs.readFileSync("README.md", "utf8");
+          if (!readme.includes("GitHub Packages mirror")) {
+            readme = "> [!NOTE]\n> This is the **GitHub Packages mirror** (`@aleixrocal/dsh-sidepanel-web`). The canonical package is `dsh-sidepanel-web` on npmjs.org.\n\n" + readme;
+            fs.writeFileSync("README.md", readme);
+          }
+          NODE
+
+      - name: Check the release tag matches the package version
+        if: github.event_name == 'release'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$tag" != "$VERSION" ]; then
+            echo "Tag $tag does not match package version $VERSION" >&2
+            exit 1
+          fi
+
+      - name: Skip an already published version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if npm view "@aleixrocal/dsh-sidepanel-web@$VERSION" version \
+              --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "SKIP=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publish the mirror
+        if: env.SKIP != 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish --access public
+
+      - name: Make the package public
+        if: env.SKIP != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          name=$(node -p "encodeURIComponent('@aleixrocal/dsh-sidepanel-web')")
+          gh api --method PATCH "user/packages/npm/$name" -f visibility=public >/dev/null || true
