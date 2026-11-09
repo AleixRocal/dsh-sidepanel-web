@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "description": "Right-sidebar browser for DeepSeek Harness Web: any public site through CDP, local/dev pages through a same-origin proxy, device emulation, and element picks that become chat annotations.",
   "icon": "assets/icon.png",
@@ -49,7 +49,8 @@
     "test:url": "node test/url-smoke.mjs",
     "test:proxy": "node test/proxy-smoke.mjs",
     "test:ui": "node test/preview/behavior.mjs",
-    "mockups": "node test/preview/mockups.mjs"
+    "mockups": "node test/preview/mockups.mjs",
+    "test:composite": "node test/composite-smoke.mjs"
   },
   "license": "MIT",
   "repository": {

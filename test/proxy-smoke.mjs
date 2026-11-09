@@ -8,7 +8,8 @@
  *   node test/proxy-smoke.mjs
  */
 import assert from "node:assert/strict";
-import { rewriteHtml, encodeOrigin, PROXY_PREFIX } from "../lib/proxy.js";
+import http from "node:http";
+import { rewriteHtml, encodeOrigin, decodeOrigin, isForcedToken, isPrivateHost, isProxyTargetAllowed, handleProxy, PROXY_PREFIX } from "../lib/proxy.js";
 import { targetUrlFrom } from "../lib/page.js";
 
 const origin = "https://app.local";
@@ -64,8 +65,56 @@ assert.equal(targetUrlFrom(`${P}/`, "?x=1", "#h", P, "https://app.local"), "http
 assert.equal(targetUrlFrom(P, "", "", P, "https://app.local"), "https://app.local/");
 assert.equal(targetUrlFrom("/producte/A2082", "", "", P, "https://app.local"), "");
 
+// Forced native view: the `f.` prefix marks a public origin the user chose to
+// proxy. It must survive decode and unlock the target fence, while a normal
+// token stays unforced and public hosts stay refused.
+const publicOrigin = "https://shop.example.com";
+const forcedToken = encodeOrigin(publicOrigin, true);
+assert.equal(decodeOrigin(forcedToken), publicOrigin, "forced token must decode to the origin");
+assert.ok(isForcedToken(forcedToken), "forced token must be recognised");
+assert.ok(!isForcedToken(encodeOrigin(publicOrigin)), "a normal token must not be forced");
+assert.equal(decodeOrigin(encodeOrigin("https://app.local")), "https://app.local", "normal token must still decode");
+assert.equal(isProxyTargetAllowed("shop.example.com", false), false, "public hosts stay refused by default");
+assert.equal(isProxyTargetAllowed("shop.example.com", true), true, "forced public hosts are allowed");
+assert.equal(isProxyTargetAllowed("app.local", false), true, "local hosts need no override");
+const forcedHtml = rewriteHtml('<a href="/checkout">x</a>', "https://shop.example.com/", forcedToken, "");
+assert.ok(
+  forcedHtml.includes(`href="${PROXY_PREFIX}/${forcedToken}/checkout"`),
+  "rewritten links must keep the forced token"
+);
+
+// End-to-end guard: a target that looks public to isPrivateHost but resolves to
+// the loopback ("localhost." with the DNS root dot) must be refused without the
+// forced token and served with it. The servers bind the dual stack, so the test
+// is independent of whether localhost. resolves to ::1 or 127.0.0.1.
+const target = http.createServer((req, res) => {
+  res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+  res.end("<html><body>forced target</body></html>");
+});
+await new Promise((resolve) => target.listen(0, resolve));
+const targetPort = target.address().port;
+const proxy = http.createServer((req, res) => {
+  handleProxy(req, res, "").catch(() => { try { res.destroy(); } catch {} });
+});
+await new Promise((resolve) => proxy.listen(0, resolve));
+const proxyPort = proxy.address().port;
+const nearLocalOrigin = `http://localhost.:${targetPort}`;
+assert.equal(isPrivateHost(new URL(nearLocalOrigin).hostname), false, "the fixture host must look public to the fence");
+const fetchProxy = async (token) => {
+  const res = await fetch(`http://127.0.0.1:${proxyPort}${PROXY_PREFIX}/${token}/`);
+  return { status: res.status, body: await res.text() };
+};
+const refused = await fetchProxy(encodeOrigin(nearLocalOrigin));
+assert.equal(refused.status, 403, "a public-looking host must be refused without the forced token");
+const served = await fetchProxy(encodeOrigin(nearLocalOrigin, true));
+assert.equal(served.status, 200, "the forced token must unlock the same host");
+assert.match(served.body, /forced target/, "the forced token must stream the target body");
+await new Promise((resolve) => proxy.close(resolve));
+await new Promise((resolve) => target.close(resolve));
+
 console.log("proxy-smoke: ok");
 console.log("  importmap:", importmap.imports["rc-ui"]);
 console.log("  data-action kept, form action proxied");
 console.log("  proxy link → target path keeps every segment");
 console.log("  inline JS untouched (URL.createObjectURL survives)");
+console.log("  forced token:", forcedToken.slice(0, 12) + "… unlocks a public host");

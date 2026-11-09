@@ -212,7 +212,9 @@ sense missatge.
 
 El proxy només accepta hosts local/dev **per disseny** (`isPrivateHost`), i no pot
 trampejar un lloc públic: reescriure HTML aliè sense control acaba en cookies,
-CORS, WebSockets i CSP trencats.
+CORS, WebSockets i CSP trencats. Des del 2026-11-06 hi ha una excepció explícita:
+el menú `⋯` de la vista CDP ofereix **Força la vista nativa (insegur)** per origen
+(token `f.`), amb l'avís que la pàgina forçada comparteix l'origen de DSH.
 
 **Les tres vies tècniques reals:**
 
@@ -237,7 +239,7 @@ local/dev, que és on aporta valor (DOM anotable).
 | Component | Línia | Estat des del 2026-11-06 |
 | --- | --- | --- |
 | `PanelTab` — vista CDP (stream + anotació per CDP) | 579 | **muntada per `BrowserTab`** sempre que la URL no sigui local |
-| `IframePanel` — vista iframe/proxy | 2105 | només per a `localhost`, `*.local` i IP privades |
+| `IframePanel` — vista iframe/proxy | 2105 | `localhost`, `*.local` i IP privades, o qualsevol origen forçat des del menú `⋯` |
 | `BrowserTab` — selector de portador | — | nou: decideix quin dels dos es munta i reacciona a `params.url` |
 
 `PanelTab` ja consumeix `/status`, `/stream` (`EventSource`), `/element`, `/input`,
@@ -356,13 +358,15 @@ Fitxers tocats: `lib/client.js` (registre + selector de portador). La resta
 | URL | Portador | Per què |
 | --- | --- | --- |
 | `http(s)` pública | `PanelTab` (CDP screencast) | funciona a **qualsevol** lloc; un iframe no pot incrustar res amb `X-Frame-Options`/CSP |
+| `http(s)` pública forçada | `IframePanel` (proxy DSH) | override explícit per origen; la pàgina comparteix l'origen de DSH |
 | `localhost`, `*.localhost`, `*.local`, `127/10/192.168/172.16-31`, `169.254`, `[::1]`, IPv6 ULA | `IframePanel` (proxy DSH) | render natiu same-origin + overlay anotable, sense cost de screencast |
 
 El commutador hi és **sempre**, en tots dos sentits:
 
 - vista nativa → botó **Vista remota (CDP)** a la barra (sempre visible);
-- vista remota → menú `⋯` → **Native view (proxy)**, quan la URL és local
-  (el proxy només accepta hosts local/dev per disseny);
+- vista remota → menú `⋯` → **Native view (proxy)** per a un host local, o
+  **Força la vista nativa (insegur)** per a qualsevol altre origen (el proxy
+  l'accepta amb el token `f.` i la pàgina passa a compartir l'origen de DSH);
 - escrivint una URL pública dins la vista nativa, salta sol a la remota.
 
 La tria **es recorda per origen** (`localStorage: sidepanel-web:carrier:<origin>`):
@@ -584,6 +588,31 @@ Regressió coberta per `test/preview/behavior.mjs` (`npm run test:ui`): arma
 anotació, comprova `aria-pressed` abans/després d'Esc, insereix una anotació i
 verifica que `createDrafts` rep un `File` `image/png` i que arriba un id a
 `addAttachments`.
+
+### 7.9 Insert: una sola imatge composta
+
+`Insert` ja no adjunta un retall per anotació: produeix **una sola imatge
+composta per inserció**. La renderitza el host (`compositeShot` a
+`lib/service.js`, `POST /api/sidepanel-web/composite`) i el client l'adjunta com
+a `annotations.png` amb `attachExtra`, de manera que el missatge porta
+exactament una imatge.
+
+Els pins no es refan a cegues: al portador natiu, el host fa un render nou de la
+URL i els torna a aplicar **per selector** (`addMarkBySelector`); al portador
+CDP aprofita la pàgina en directe, que ja té els pins existents. Al render nou,
+la captura parteix d'un viewport horitzontal de 1200×800 i **creix quan els
+picks abasten més d'una pantalla** (fins a 1200 px d'alçada); després es
+desplaça al primer pick. El motiu és com DSH mostra les imatges: una imatge
+sola es renderitza a 240 px i diverses imatges al mateix missatge cauen a
+quadrats de 64 px, així que val més una imatge de conjunt que un retall per
+element.
+
+Si la composició falla, el client cau al **primer retall** disponible
+(`cropImage`) com a imatge de reserva; el text no canvia i continua portant cada
+selector, el fragment DOM, els estils, la posició i el camí del retall.
+Advertiment: com que la imatge és un **render nou al host** (viewport de
+1200×800 o la pàgina CDP en directe), un estat que només vivia al panell —un
+modal obert, un formulari a mig omplir— pot no aparèixer-hi.
 
 ---
 

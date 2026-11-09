@@ -177,6 +177,14 @@ ${overlayScript(nonce, "http://shop.local")}</body></html>`;
       tag: "button"
     });
   }
+  if (p === "/api/sidepanel-web/composite" && req.method === "POST") {
+    return json(res, 200, {
+      ok: true,
+      file: "/tmp/annotations.png",
+      data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nH0AAAAASUVORK5CYII=",
+      size: { w: 1, h: 1 }
+    });
+  }
   if (p === "/api/sidepanel-web/annotations" && req.method === "POST") {
     return json(res, 200, { ok: true, file: "/tmp/annotation.json" });
   }

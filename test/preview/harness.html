@@ -43,6 +43,21 @@
   const showChrome = q.get("chrome") !== "0";
   // ?url=… simulates a chat link: it arrives as sidebar navigation params.url
   const requestedUrl = q.get("url") || "";
+  // ?force-native=1 simulates choosing "Force native view" for that origin.
+  // The client reads the carrier preference from localStorage on mount, so it
+  // has to be written before the panel renders.
+  if (q.get("force-native") === "1" && requestedUrl) {
+    try {
+      localStorage.setItem("sidepanel-web:carrier:" + new URL(requestedUrl).origin, "native");
+    } catch (e) { console.warn(e); }
+  }
+  // The menu state starts from the default carrier, so a preference left by an
+  // earlier run must not short-circuit it.
+  if (state === "force-native-menu" && requestedUrl) {
+    try {
+      localStorage.removeItem("sidepanel-web:carrier:" + new URL(requestedUrl).origin);
+    } catch (e) { console.warn(e); }
+  }
   const side = document.getElementById("side");
   side.style.width = w + "px";
   side.style.height = h + "px";
@@ -179,6 +194,64 @@
     window.__escNative = { before, after, error: window.__escNativeError || null };
   }
 
+  if (state === "insert-native") {
+    // Native carrier, full Insert path: pick an element inside the proxied
+    // iframe, note it, add it to the list, and attach the one composite image.
+    const writerHost = document.createElement("div");
+    writerHost.id = "writer-host";
+    document.body.appendChild(writerHost);
+    window.__draft = null;
+    ReactDOM.createRoot(writerHost).render(
+      React.createElement(writerComp, {
+        sessionId: "preview-session",
+        inputActions: {
+          setDraft: (v) => { window.__draft = v; },
+          addAttachments: (ids) => { window.__attached = (window.__attached || []).concat(ids); }
+        },
+        useInput: () => ({ draft: "" })
+      })
+    );
+    await sleep(100);
+    await waitFor(".ab2-root");
+    await sleep(600);
+    const annotate = [...document.querySelectorAll(".ab2-btn")].find((b) => /Annotate/i.test(b.textContent));
+    if (annotate) { annotate.click(); await sleep(500); }
+    const frame = document.querySelector("iframe.ab2-frame");
+    let picked = false;
+    try {
+      const btn = frame && frame.contentDocument && frame.contentDocument.querySelector("#cta");
+      if (btn) {
+        const r = btn.getBoundingClientRect();
+        btn.dispatchEvent(new MouseEvent("click", {
+          bubbles: true, cancelable: true,
+          clientX: r.left + r.width / 2, clientY: r.top + r.height / 2
+        }));
+        picked = true;
+      }
+    } catch (e) { window.__insertNativeError = String(e); }
+    const card = await waitFor(".ab2-note");
+    if (card) {
+      const ta = card.querySelector("textarea");
+      if (ta) {
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        setter.call(ta, "Make the primary action sticky on mobile");
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+        await sleep(120);
+      }
+      const add = [...card.querySelectorAll("button")].find((b) => /Add to list|加入列表/i.test(b.textContent));
+      if (add) { add.click(); await sleep(1200); }
+    }
+    const insert = [...document.querySelectorAll(".ab2-btn")].find((b) => /^Insert/.test(b.textContent.trim()));
+    if (insert && !insert.disabled) { insert.click(); await sleep(1500); }
+    window.__insertNative = {
+      picked,
+      error: window.__insertNativeError || null,
+      draft: window.__draft,
+      files: window.__draftFiles || [],
+      attached: window.__attached || []
+    };
+  }
+
   if (state === "insert") {
     // 先把隐藏写入器挂上（真实宿主里它在 conversation.input.dock 槽位）
     const writerHost = document.createElement("div");
@@ -292,6 +365,49 @@
       await sleep(260);
     }
     window.__device = { found: !!more, preset: (document.querySelector(".ab-mode") || {}).textContent || "" };
+  }
+
+  if (state === "force-native") {
+    // Public URL plus a saved "native" preference: the forced proxy carrier
+    // must mount, carry the f. token and show the same-origin warning.
+    await waitFor(".ab2-root");
+    await sleep(700);
+    const frame = document.querySelector("iframe.ab2-frame");
+    const warn = document.querySelector(".ab2-warn");
+    window.__forceNative = {
+      root: !!document.querySelector(".ab2-root"),
+      frame: !!frame,
+      warn: !!warn,
+      warnText: warn ? warn.textContent : "",
+      src: frame ? frame.getAttribute("src") : ""
+    };
+  }
+
+  if (state === "force-native-menu") {
+    // Same result, but through the UI: open ⋯ on a public page and click the
+    // Force native view item; that is the path a user actually takes.
+    await waitFor(".ab-root");
+    await sleep(400);
+    const more = [...document.querySelectorAll("button")].find((b) => b.textContent.trim() === "⋯");
+    if (more) {
+      more.click();
+      await sleep(250);
+    }
+    const force = [...document.querySelectorAll("button")].find((b) => /Force native view/.test(b.textContent));
+    if (force) {
+      force.click();
+      await sleep(1400);
+    }
+    const frame = document.querySelector("iframe.ab2-frame");
+    const warn = document.querySelector(".ab2-warn");
+    window.__forceNative = {
+      root: !!document.querySelector(".ab2-root"),
+      frame: !!frame,
+      warn: !!warn,
+      warnText: warn ? warn.textContent : "",
+      src: frame ? frame.getAttribute("src") : "",
+      found: !!force
+    };
   }
 
   await sleep(300);

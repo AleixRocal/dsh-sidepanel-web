@@ -27,10 +27,17 @@ node test/preview/server.mjs
 Query parameters:
 
 - `state`: `ready` `picked` `typing` `insert` `blank` `loading` `error` `shoterr`
-  `tall` `tallpicked` `device` `esc` `esc-native`.
+  `tall` `tallpicked` `device` `esc` `esc-native` `force-native`
+  `insert-native`.
 - `esc-native` additionally needs `&url=http://shop.local/checkout`; it loads the
   native iframe fixture through the mock proxy so Esc-inside-the-page can be
   tested.
+- `insert-native` also needs `&url=http://shop.local/checkout`; it picks `#cta`
+  inside the native iframe, adds the note and runs Insert, so the native
+  one-composite path is exercised.
+- `force-native` needs `&url=<public-url>&force-native=1`; the harness saves the
+  per-origin `native` carrier preference before mounting, so the public URL
+  opens the proxy iframe with the forced `f.` token and the same-origin warning.
 - `w` / `h`: sidebar width and height. Below 512 the narrow layout is used, 520+
   gets wide padding, 560+ anchors the floating card, 640+ shows the page title.
 - `lang`: `en` (default) or `es`, resolved through the dictionary the client
@@ -57,12 +64,15 @@ customer, file path or screenshot of the live GUI is used.
 node test/preview/behavior.mjs
 ```
 
-Checks the three regressions that are easy to bring back: **Esc leaves annotate
-mode in the CDP carrier** (focus is not on the panel root), **Esc inside the
-native iframe** (the overlay forwards it as a cancel message), and **an inserted
-annotation attaches its crop as an image** (`conversation.createDrafts` + `inputActions.addAttachments`,
-not just a path). The mock server serves a 1×1 PNG from `/crop`; the harness
-fakes the conversation service and records the file type and size.
+Checks the regressions that are easy to bring back: **Esc leaves annotate mode
+in the CDP carrier** (focus is not on the panel root), **Esc inside the native
+iframe** (the overlay forwards it as a cancel message), **a forced public URL
+mounts the proxy iframe** (with the `f.` token and the same-origin warning), and
+**Insert attaches exactly one composite image** (`annotations.png`) on both the
+CDP and the native path (`conversation.createDrafts` +
+`inputActions.addAttachments`, not just a path). The mock server serves a 1×1 PNG
+from `/crop` and `/composite`; the harness fakes the conversation service and
+records the file type and size.
 
 ## Batch screenshots
 

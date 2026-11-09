@@ -96,7 +96,14 @@ async function main() {
     { state: "esc", extra: "" },
     { state: "insert", extra: "" },
     // Native carrier: local URL -> iframe proxy -> overlay forwards Esc.
-    { state: "esc-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` }
+    { state: "esc-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` },
+    // Explicit override: a public URL with the per-origin "native" preference
+    // saved must still mount the proxy iframe, with the f. token and warning.
+    { state: "force-native", extra: `&url=${encodeURIComponent("https://shop.example.com/checkout")}&force-native=1` },
+    // The same override through the real UI: open ⋯ and click the menu item.
+    { state: "force-native-menu", extra: `&url=${encodeURIComponent("https://shop.example.com/checkout")}` },
+    // Native Insert path: pick, note, add to list, Insert -> one composite.
+    { state: "insert-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` }
   ];
   const results = {};
   for (const { state, extra } of states) {
@@ -116,7 +123,7 @@ async function main() {
     assert.ok(ready, `${state}: harness never became ready`);
     const out = await client.send(
       "Runtime.evaluate",
-      { expression: "JSON.stringify(window.__esc || window.__insert || window.__escNative || null)", returnByValue: true },
+      { expression: "JSON.stringify(window.__esc || window.__insert || window.__escNative || window.__forceNative || window.__insertNative || null)", returnByValue: true },
       sid
     );
     results[state] = JSON.parse(out.result.value);
@@ -131,16 +138,45 @@ async function main() {
   assert.equal(results["esc-native"].before, true, "esc-native: annotate mode was not armed first");
   assert.equal(results["esc-native"].after, false, "esc-native: Escape inside the iframe did not leave annotate mode");
 
+  assert.ok(results["force-native"], "force-native: no result");
+  assert.equal(results["force-native"].root, true, "force-native: the native panel did not mount");
+  assert.equal(results["force-native"].frame, true, "force-native: the proxy iframe did not mount");
+  assert.equal(results["force-native"].warn, true, "force-native: the same-origin warning is missing");
+  assert.ok(
+    results["force-native"].src.startsWith("/api/sidepanel-web/p/f."),
+    `force-native: proxy token is not forced (${results["force-native"].src})`
+  );
+
+  assert.ok(results["force-native-menu"], "force-native-menu: no result");
+  assert.equal(results["force-native-menu"].found, true, "force-native-menu: the Force native view item was not rendered");
+  assert.equal(results["force-native-menu"].frame, true, "force-native-menu: the proxy iframe did not mount");
+  assert.equal(results["force-native-menu"].warn, true, "force-native-menu: the same-origin warning is missing");
+  assert.ok(
+    results["force-native-menu"].src.startsWith("/api/sidepanel-web/p/f."),
+    `force-native-menu: proxy token is not forced (${results["force-native-menu"].src})`
+  );
+
   assert.ok(results.insert, "insert: no result");
   assert.ok(results.insert.draft && results.insert.draft.includes("Screenshot:"), "insert: crop path missing from the text");
   assert.ok(Array.isArray(results.insert.attached) && results.insert.attached.length > 0, "insert: no attachment id reached the composer");
   assert.ok(results.insert.draftFiles && results.insert.draftFiles.length > 0, "insert: conversation.createDrafts received no file");
-  assert.equal(results.insert.draftFiles[0].type, "image/png", "insert: crop is not an image/png File");
-  assert.ok(results.insert.draftFiles[0].size > 0, "insert: crop File is empty");
+  assert.equal(results.insert.draftFiles.length, 1, "insert: expected exactly one annotated image, not one per pick");
+  assert.equal(results.insert.draftFiles[0].name, "annotations.png", "insert: the attached image is not the composite");
+  assert.equal(results.insert.draftFiles[0].type, "image/png", "insert: composite is not an image/png File");
+  assert.ok(results.insert.draftFiles[0].size > 0, "insert: composite File is empty");
+  assert.ok(results["insert-native"], "insert-native: no result");
+  assert.equal(results["insert-native"].error, null, "insert-native: picking inside the iframe failed");
+  assert.equal(results["insert-native"].picked, true, "insert-native: the fixture button was not picked");
+  assert.equal(results["insert-native"].files.length, 1, "insert-native: expected exactly one annotated image");
+  assert.equal(results["insert-native"].files[0].name, "annotations.png", "insert-native: the image is not the composite");
+  assert.equal(results["insert-native"].files[0].type, "image/png", "insert-native: composite is not a PNG");
+  assert.ok(results["insert-native"].attached.length > 0, "insert-native: no attachment reached the composer");
 
   console.log("behavior: ok");
   console.log("  Esc leaves annotate mode (CDP):", results.esc.before, "->", results.esc.after);
   console.log("  Esc leaves annotate mode (native iframe):", results["esc-native"].before, "->", results["esc-native"].after);
+  console.log("  forced native on a public URL:", results["force-native"].src.split("?")[0], "warn:", results["force-native"].warn);
+  console.log("  forced native via the ⋯ menu:", results["force-native-menu"].src.split("?")[0], "item:", results["force-native-menu"].found);
   console.log("  crop attached:", results.insert.draftFiles[0], "ids:", results.insert.attached.join(","));
 
   client.close();

@@ -4,6 +4,39 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-11-09
+
+### Added
+
+- **Force native view** for a public origin, from the panel's `⋯` menu. The
+  choice is remembered per origin; the proxy accepts that host only when the
+  page carries the explicit `f.` token, and the panel warns that the forced
+  page shares DSH's origin. The default policy is unchanged (local/dev → proxy,
+  public → CDP).
+- **One annotated image per Insert.** The host renders a viewport screenshot,
+  re-applies every pick's pin (by selector for the native carrier, from the live
+  page for CDP) and attaches that single image. DSH renders a lone image at
+  240px and several images in one message as 64px squares, so this replaces the
+  per-annotation crops that made annotations look tiny.
+
+### Changed
+
+- Annotation crops are no longer attached one by one: their paths stay in the
+  text, and the first crop is the fallback image when the composite render
+  fails. The composite is a fresh render for native pages, so state that lived
+  only in the panel (an open modal, a half-filled form) may not appear.
+- The Quick start documents the npm install route
+  (`dsh plugin --profile web add dsh-sidepanel-web`) and the README links are
+  npm-safe (absolute images and repository links).
+
+### Tests
+
+- `test/proxy-smoke.mjs` covers the forced token, the target fence and the
+  token's persistence in rewritten links; `test/composite-smoke.mjs` renders a
+  real Chromium page with two pins and checks the composite PNG and its grown
+  viewport; `test/preview/behavior.mjs` covers the forced native carrier, the
+  native Insert path and the single composite attachment.
+
 ## [0.3.1] — 2026-11-06
 
 ### Fixed
@@ -86,6 +119,7 @@ All notable changes to this project. The format follows
   proxy for local/dev pages.
 - English and Spanish UI.
 
+[0.4.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.2.5...v0.3.0
 [0.2.5]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.1.0...v0.2.5

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="dsh-sidepanel-web — a browser in the DSH right sidebar with annotations that reach the chat" width="100%">
+  <img src="https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/banner.png" alt="dsh-sidepanel-web — a browser in the DSH right sidebar with annotations that reach the chat" width="100%">
 </p>
 
 <p align="center">
@@ -9,22 +9,23 @@
 <p align="center">
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&label=release&display_name=tag"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
+  <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="npm package" src="https://img.shields.io/npm/v/dsh-sidepanel-web"></a>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
   <img alt="DSH 0.2.1-rc.2 to 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
   <img alt="Node 22.19+" src="https://img.shields.io/badge/node-%E2%89%A522.19-339933?logo=nodedotjs&logoColor=white">
   <a href="https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641"><img alt="Market submission" src="https://img.shields.io/badge/market-PR%20%2312641-2ea44f"></a>
 </p>
 
 <p align="center">
-  English · <a href="README.ca.md">Català</a>
+  English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a>
 </p>
 
-`dsh-sidepanel-web` adds a **Browser** tab to the DSH right sidebar. Open a page next to the conversation, pick the element you are talking about, write a note, and send it to the composer with its selector, styles, size and a cropped screenshot attached.
+`dsh-sidepanel-web` adds a **Browser** tab to the DSH right sidebar. Open a page next to the conversation, pick the element you are talking about, write a note, and send it to the composer with its selector, styles, size and one annotated screenshot attached.
 
 > [!TIP]
 > **One panel, two carriers.** Local/dev pages go through a same-origin proxy and stay fully interactive. Any public page is rendered by a real Chromium over CDP, so `X-Frame-Options` and CSP cannot block it. The panel picks the carrier from the URL; the switch is one click away.
 
-![DSH Web with the Browser panel open next to a conversation](assets/screenshots/01-browser-panel.png)
+![DSH Web with the Browser panel open next to a conversation](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/01-browser-panel.png)
 
 <p align="center"><em>Mockup screenshots: the storefront, conversation and URLs are invented. No real account or customer data is shown.</em></p>
 
@@ -42,7 +43,7 @@
 - [Security](#security)
 - [Known limitations](#known-limitations)
 - [Development](#development)
-- [Changelog](CHANGELOG.md)
+- [Changelog](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md)
 - [Market](#market)
 - [Contributing](#contributing)
 - [Credits](#credits)
@@ -62,7 +63,7 @@ It works in both directions:
 **Navigation and carriers**
 
 - **Automatic address-bar scheme.** Type `example.com` and the panel opens `https://example.com/`; type `shop.local:5173`, `127.0.0.1:5173` or `192.168.1.20:8080` and it uses `http://` instead. Non-web schemes (`mailto:`, `file:`, `javascript:`, `data:`) are refused instead of being turned into a website.
-- **Two carriers, switchable per site.** The native view has a *Remote view (CDP)* button; the CDP view offers *Native view (proxy)* for local hosts. The choice is remembered per origin.
+- **Two carriers, switchable per site.** The native view has a *Remote view (CDP)* button; the CDP view offers *Native view (proxy)* for local hosts and *Force native view (unsafe)* for any other origin. The choice is remembered per origin.
 - **Chat links land here.** The tab registers `kind: "browser"`, so the chat's “open link in sidebar” preference opens this annotated browser; `params.url` is navigated on arrival.
 - **Bring your own browser.** Point `cdpUrl`/`wsUrl` at any Chrome started with `--remote-debugging-port`, or let the plugin discover one, or let it launch its own with a persistent profile.
 
@@ -87,7 +88,7 @@ It works in both directions:
 - Element pick with selector, text, classes, styles, position, HTML excerpt and page URL.
 - Numbered pins, notes, and a crop captured by selector.
 - Composer hand-off with `InputActions.insertText`, so the draft is not replaced.
-- **The crop rides along as an image.** Annotation crops are attached to the draft, so the composer shows a preview and the sent message carries the image, not just a path.
+- **One annotated image rides along.** Insert attaches a single viewport screenshot with every pick pinned, so the chat shows the annotated page instead of tiny per-element crops (DSH caps a lone image at 240px and renders several images as 64px squares). The text still carries each selector, DOM excerpt, styles, position and crop path.
 - **Esc leaves annotate mode** from the page or the toolbar; an open note card closes first.
 - Device emulation: responsive (fits the panel), desktop 1280×800, laptop 1440×900, tablet 768×1024 (iPad UA), phone 390×844 (iPhone UA) and Android 412×915 — real touch emulation and matching `devicePixelRatio`.
 - English and Spanish UI through `ctx.locale`; other locales fall back to English.
@@ -103,6 +104,9 @@ It works in both directions:
 ### Install
 
 ```bash
+# from npm
+dsh plugin --profile web add dsh-sidepanel-web
+
 # from GitHub
 dsh plugin --profile web add github:AleixRocal/dsh-sidepanel-web
 
@@ -142,14 +146,14 @@ Chrome 136+ refuses `/json/version` on the default profile, hence the separate `
 
 | | |
 | --- | --- |
-| ![Annotating the place-order button](assets/screenshots/02-annotate.png) | ![Phone emulation preset](assets/screenshots/03-devices.png) |
+| ![Annotating the place-order button](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/02-annotate.png) | ![Phone emulation preset](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/03-devices.png) |
 | **Pick, note, send.** The pin lands on the element and the note card prepares the composer payload. | **Device emulation.** Desktop, laptop, tablet, iPhone and Android with touch and DPR. |
 
-![How the two carriers and the annotation path work](assets/screenshots/04-how-it-works.png)
+![How the two carriers and the annotation path work](https://raw.githubusercontent.com/AleixRocal/dsh-sidepanel-web/main/assets/screenshots/04-how-it-works.png)
 
 <p align="center"><em>The diagram: a local/dev page through the same-origin proxy, a public page through CDP, and both feeding the same annotation payload.</em></p>
 
-All screenshots are mockups generated from [`test/preview/shell.html`](test/preview/shell.html) and [`test/preview/diagram.html`](test/preview/diagram.html): the panel is the real client, the storefront is the fictional **Northwind Supply** on the reserved `example.com` domain, and no real account, page or customer data is used. See [Screenshots and privacy](#screenshots-and-privacy).
+All screenshots are mockups generated from [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html) and [`test/preview/diagram.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/diagram.html): the panel is the real client, the storefront is the fictional **Northwind Supply** on the reserved `example.com` domain, and no real account, page or customer data is used. See [Screenshots and privacy](#screenshots-and-privacy).
 
 ## Usage
 
@@ -230,7 +234,7 @@ DSH Web GUI
 - **URL rules** (`lib/url.js`): scheme detection shared with the client (mirrored inside `lib/client.js` and enforced by `test/url-smoke.mjs`).
 - **Client half** (`lib/client.js`): the sidebar tab, address bar, native/remote carriers, annotation note card, composer insertion, EN/ES dictionaries.
 
-A deeper write-up of the DSH Web integration (slots, tab registry, carriers, browser discovery) is in [`docs/browser-integration.md`](docs/browser-integration.md) (Catalan).
+A deeper write-up of the DSH Web integration (slots, tab registry, carriers, browser discovery) is in [`docs/browser-integration.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/browser-integration.md) (Catalan).
 
 ## FAQ
 
@@ -244,6 +248,12 @@ Yes — type the scheme explicitly (`http://example.com`). Local/dev hosts (`loc
 <summary><strong>The public page shows a connection error or refuses to load.</strong></summary>
 
 Public pages use the CDP carrier, not an iframe, so `X-Frame-Options` is not the cause. Check that the host Chromium is running and reachable (`cdpUrl`/`wsUrl` or the auto-launch), and that the host has network access to the site. The panel's status line names the CDP error.
+</details>
+
+<details>
+<summary><strong>Can I force the native view for a public site?</strong></summary>
+
+Yes, explicitly: open the site, click the **⋯** menu and choose **Force native view (unsafe)**. The choice is remembered per origin, so every later tab to that origin opens in the native carrier, and the page becomes proxied and annotatable like a local one. Only do it for sites you trust: the proxied page shares DSH's origin and can read the panel DOM and call the DSH API with your session. The default policy is unchanged — local/dev goes native, public goes to CDP.
 </details>
 
 <details>
@@ -286,29 +296,31 @@ With `npm run mockups`, from the real client and a mock backend. Every image use
 
 Screenshots are part of the deliverable, so they follow a hard rule: **no real user data**.
 
-- The panel is the real `lib/client.js`; the shell around it (conversation, workspace, session) is static HTML in [`test/preview/shell.html`](test/preview/shell.html).
+- The panel is the real `lib/client.js`; the shell around it (conversation, workspace, session) is static HTML in [`test/preview/shell.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/shell.html).
 - The storefront is **Northwind Supply**, a fictional shop on the reserved `example.com` domain.
 - No real DSH window, account, page, customer, file path or token appears in any image.
-- [`screenshots.json`](screenshots.json) declares the four storefront images for plugin marketplaces.
-- Regenerate with `npm run mockups`; the banner is rendered from [`test/preview/banner.html`](test/preview/banner.html).
+- [`screenshots.json`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/screenshots.json) declares the four storefront images for plugin marketplaces.
+- Regenerate with `npm run mockups`; the banner is rendered from [`test/preview/banner.html`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/banner.html).
 
 ## Security
 
 - Every host route calls `connection.requestRejection(req)`; the web server is loopback-bound.
-- The rewriting proxy only accepts **local/dev hosts** (localhost, `*.local`, private, loopback and link-local ranges). Public URLs are refused and handled by the CDP carrier.
+- The rewriting proxy only accepts **local/dev hosts** (localhost, `*.local`, private, loopback and link-local ranges). Public URLs are refused and handled by the CDP carrier, unless the origin was explicitly forced into the native view.
 - The native iframe runs sandboxed (`allow-scripts allow-forms allow-same-origin allow-popups` for local proxy pages). `allow-same-origin` is required for the proxy document to keep its cookies and APIs; it also means a proxied page shares the DSH origin. Only proxy pages you trust.
+- **Force native view is an explicit override.** It lets a public origin through the same-origin proxy; that page then shares the DSH origin (DOM, cookies, API calls). The default policy still refuses public hosts. Only force sites you trust.
 - The host browser uses a dedicated profile and ignores certificate errors for local self-signed dev servers. The CDP carrier has the capabilities of the browser you point it at.
 - Annotation text and page content are treated as untrusted data by the agent.
-- Report vulnerabilities privately through [SECURITY.md](SECURITY.md); do not open a public issue.
+- Report vulnerabilities privately through [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md); do not open a public issue.
 
 ## Known limitations
 
 - **Web only.** DSH Desktop uses Electron `<webview>` and a different profile; this plugin does not replace it.
-- **The proxy is local/dev only.** Public sites are not proxied; they run in the CDP browser.
+- **The proxy is local/dev only by default.** Public sites are not proxied; they run in the CDP browser. **Force native view** is the deliberate per-origin override, with the same-origin warning above.
 - **WebSocket/HMR is not proxied** in the native carrier. Dev servers still serve the page, but hot reload may not work; switch to the CDP view for HMR.
 - **Cookies** in the native carrier live in a per-origin host jar; some login flows may still fail. The CDP carrier uses the browser's own profile.
 - **Cross-origin iframes and closed shadow DOM** cannot be annotated; only their container.
 - **Crops** are taken by selector on the host page; a dynamic page state can differ from the frame you saw.
+- **The annotated image is a fresh render on the host** (a 1200×800 viewport, or the live CDP page), so state that lived only in the panel — an open modal, a half-filled form — may not appear. The text keeps every pick, its DOM excerpt and its crop path.
 - **CDP latency** depends on the host and the page; the screencast caps at 15 fps by default.
 - **Alpha:** APIs and behaviour may change.
 
@@ -338,7 +350,7 @@ npm run mockups        # re-render assets/banner.png and assets/screenshots
 dsh plugin --profile web add link:$PWD
 ```
 
-Release notes live in [`CHANGELOG.md`](CHANGELOG.md).
+Release notes live in [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md).
 
 The preview harness renders the real `lib/client.js` with a mock backend:
 
@@ -347,23 +359,23 @@ node test/preview/server.mjs
 # http://127.0.0.1:7788/harness.html?state=ready&w=360&h=780
 ```
 
-See [`test/preview/README.md`](test/preview/README.md) for every state, the full-window shell, the behaviour test and the mockup pipeline.
+See [`test/preview/README.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/test/preview/README.md) for every state, the full-window shell, the behaviour test and the mockup pipeline.
 
 ## Market
 
 The [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) registry is the market source. Submission state:
 
 - [x] Repository is public and the `dsh-plugin` topic is set.
-- [x] `package.json` declares `dsh.bundle` and ships [`cordis.patch.yml`](cordis.patch.yml).
-- [x] Raster icon at `assets/icon-180.png` and storefront screenshots in [`screenshots.json`](screenshots.json).
-- [x] Entry drafted at [`market/entry.yml`](market/entry.yml).
+- [x] `package.json` declares `dsh.bundle` and ships [`cordis.patch.yml`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/cordis.patch.yml).
+- [x] Raster icon at `assets/icon-180.png` and storefront screenshots in [`screenshots.json`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/screenshots.json).
+- [x] Entry drafted at [`market/entry.yml`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/market/entry.yml).
 - [x] Pull request opened: [awesome-dsh-plugin#12641](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/12641) — one file, `data/plugins/AleixRocal__dsh-sidepanel-web.yml`.
 
 The registry validates the repository age (≥ 1 day) and re-runs stale gates automatically. The current gate verdict is exactly that: **0.8 / 1 day**, with no other problem. It clears by itself once the repository reaches 24 h at **2026-11-06 15:45 UTC**; no resubmission is needed.
 
 ## Contributing
 
-Contributions are welcome: bug reports, carrier fixes, documentation and mockup improvements. Start with [CONTRIBUTING.md](CONTRIBUTING.md), run `npm run check` and `npm test`, and read the screenshot privacy rule before adding images. This project follows the [Code of Conduct](CODE_OF_CONDUCT.md). Security reports go through [SECURITY.md](SECURITY.md), not public issues.
+Contributions are welcome: bug reports, carrier fixes, documentation and mockup improvements. Start with [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md), run `npm run check` and `npm test`, and read the screenshot privacy rule before adding images. This project follows the [Code of Conduct](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md). Security reports go through [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md), not public issues.
 
 ## Credits
 
@@ -371,8 +383,8 @@ Forked from [`zengxiaolou/dsh-annotate-browser`](https://github.com/zengxiaolou/
 
 ## License
 
-MIT. See [LICENSE](LICENSE); the original copyright notice is preserved.
+MIT. See [LICENSE](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE); the original copyright notice is preserved.
 
 ---
 
-<p align="center">English · <a href="README.ca.md">Català</a> · <a href="#table-of-contents">Back to top ↑</a></p>
+<p align="center">English · <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/README.ca.md">Català</a> · <a href="#table-of-contents">Back to top ↑</a></p>
