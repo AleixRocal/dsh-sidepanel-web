@@ -10,6 +10,7 @@
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="最新版本" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&label=release&display_name=tag"></a>
   <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="npm 包" src="https://img.shields.io/npm/v/dsh-sidepanel-web"></a>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/pkgs/npm/dsh-sidepanel-web"><img alt="GitHub Packages" src="https://img.shields.io/badge/GitHub%20Packages-mirror-24292f?logo=github"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE"><img alt="MIT 许可证" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
   <img alt="DSH 0.2.1-rc.2 到 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
   <img alt="Node 22.19+" src="https://img.shields.io/badge/node-%E2%89%A522.19-339933?logo=nodedotjs&logoColor=white">
@@ -156,6 +157,8 @@ dsh plugin --profile web add link:/absolute/path/to/dsh-sidepanel-web
 ```
 
 重启一次 `dsh web` 并刷新 GUI。右侧边栏的引导里会出现 **浏览器** 标签页。
+
+带 scope 的副本（`@aleixrocal/dsh-sidepanel-web`）也发布在 [GitHub Packages](https://github.com/AleixRocal/dsh-sidepanel-web/pkgs/npm/dsh-sidepanel-web)；规范包仍然是 npmjs 上的那个。安装镜像需要带 `read:packages` 的 token 和 `@aleixrocal:registry=https://npm.pkg.github.com`。
 
 ### 第一个页面
 
