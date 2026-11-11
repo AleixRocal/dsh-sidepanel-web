@@ -4,6 +4,17 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] — 2026-11-11
+
+### Documentation
+
+- Published the npm weekly-downloads and GitHub-stars badges in all three
+  READMEs, each linked to the npm package and the repository's stargazers. The
+  download badge uses npm's weekly window (`npm/dw`), the same period npm shows
+  on the package page, instead of the previous monthly one.
+- Republished the package so npm renders the new README; the page had been
+  showing the 0.4.1 tarball, which predates the badges.
+
 ## [0.4.1] — 2026-11-09
 
 ### Documentation

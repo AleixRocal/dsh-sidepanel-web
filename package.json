@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "description": "A browser in the DSH right sidebar: annotate any page in its DOM and send the annotation to the chat. Local/dev pages stay interactive through a same-origin proxy; public pages render over CDP.",
   "icon": "assets/icon.png",

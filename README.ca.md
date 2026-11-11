@@ -10,6 +10,8 @@
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AleixRocal/dsh-sidepanel-web/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/releases"><img alt="Última versió" src="https://img.shields.io/github/v/release/AleixRocal/dsh-sidepanel-web?sort=semver&label=release&display_name=tag"></a>
   <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="Paquet npm" src="https://img.shields.io/npm/v/dsh-sidepanel-web"></a>
+  <a href="https://www.npmjs.com/package/dsh-sidepanel-web"><img alt="Descàrregues npm per setmana" src="https://img.shields.io/npm/dw/dsh-sidepanel-web"></a>
+  <a href="https://github.com/AleixRocal/dsh-sidepanel-web/stargazers"><img alt="Estrelles GitHub" src="https://img.shields.io/github/stars/AleixRocal/dsh-sidepanel-web"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/pkgs/npm/dsh-sidepanel-web"><img alt="GitHub Packages" src="https://img.shields.io/badge/GitHub%20Packages-mirror-24292f?logo=github"></a>
   <a href="https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/LICENSE"><img alt="Llicència MIT" src="https://img.shields.io/github/license/AleixRocal/dsh-sidepanel-web"></a>
   <img alt="DSH 0.2.1-rc.2 a 0.3" src="https://img.shields.io/badge/DSH-0.2.1--rc.2%20%E2%86%92%200.3-4f46e5">
