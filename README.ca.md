@@ -27,6 +27,13 @@
 
 Tria el botó, el camp o la targeta de què parles, escriu què cal canviar i insereix-ho. El missatge porta el selector de l'element, el text, un fragment d'HTML, els estils calculats, la mida i la posició, i una captura amb l'anotació marcada. L'agent ja no ha d'endevinar a quin element et refereixes, i tu ja no has de descriure'l amb coordenades ni un munt de captures.
 
+**D'un cop d'ull**
+
+- **Què és:** un connector de DSH Web que afegeix una pestanya **Navegador** al panell dret.
+- **Què rep l'agent:** el selector de l'element, l'etiqueta, l'id i les classes, un fragment d'HTML, el CSS que s'aplica (estils calculats), la mida i la posició, la URL de la pàgina, la teva nota i una captura amb la marca.
+- **Per què ajuda:** l'agent pot trobar el component al codi i fer el canvi, en lloc d'endevinar-ho a partir de píxels o de «el botó blau de baix».
+- **Què no fa:** no afegeix eines a l'agent ni automatitza res. El navegador i el missatge els condueixes tu.
+
 **Codi:** [github.com/AleixRocal/dsh-sidepanel-web](https://github.com/AleixRocal/dsh-sidepanel-web) · **Paquet:** [npmjs.com/package/dsh-sidepanel-web](https://www.npmjs.com/package/dsh-sidepanel-web)
 
 > [!TIP]

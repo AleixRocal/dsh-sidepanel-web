@@ -27,6 +27,13 @@
 
 Pick the button, field or card you are talking about, write what should change, and insert it. The message carries the element's selector, its text, an HTML excerpt, its computed styles, its size and position, and one screenshot with the annotation pinned. The agent no longer has to guess which element you mean — and you no longer have to describe it with coordinates or a pile of screenshots.
 
+**At a glance**
+
+- **What it is:** a DSH Web plugin that adds a **Browser** tab to the right sidebar.
+- **What the agent gets:** the element's selector, tag, id and classes, an HTML excerpt, the CSS that applies (computed styles), its size and position, the page URL, your note, and one screenshot with the pick pinned.
+- **Why it helps:** the agent can find the component in the code and make the change, instead of guessing from pixels or from “the blue button at the bottom”.
+- **What it does not do:** it adds no agent tools and runs no automation. You still drive the browser and send the message.
+
 **Source:** [github.com/AleixRocal/dsh-sidepanel-web](https://github.com/AleixRocal/dsh-sidepanel-web) · **Package:** [npmjs.com/package/dsh-sidepanel-web](https://www.npmjs.com/package/dsh-sidepanel-web)
 
 > [!TIP]

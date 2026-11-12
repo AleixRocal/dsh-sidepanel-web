@@ -4,6 +4,21 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] — 2026-11-12
+
+### Documentation
+
+- Rewrote the npm and market one-line descriptions around what the plugin does
+  for the agent — a Browser tab in the right sidebar that turns an element pick
+  into its selector, HTML, styles, size and a pinned screenshot. The previous
+  text led with carrier jargon (`CDP`, "same-origin proxy") and made the plugin
+  read like a browser-automation tool; the new one says what the agent receives
+  and what it can do with it. Added search keywords (`element-picker`,
+  `ui-feedback`, `screenshot`, `frontend`, `web-inspector`) for market discovery.
+- Added an "At a glance" block to the three READMEs: what the plugin is, what
+  the agent gets, why that helps, and what it deliberately does not do (no agent
+  tools, no automation).
+
 ## [0.4.2] — 2026-11-11
 
 ### Documentation

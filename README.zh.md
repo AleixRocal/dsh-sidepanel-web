@@ -27,6 +27,13 @@
 
 选中你正在说的按钮、输入框或卡片，写下要改什么，然后插入。消息里带着元素的 selector、文本、HTML 片段、计算样式、尺寸和位置，以及一张带标注的截图。Agent 不用再猜你指的是哪个元素，你也不用再用坐标或一堆截图去描述它。
 
+**一眼看懂**
+
+- **是什么：** 一个 DSH Web 插件，在右侧边栏添加 **浏览器** 标签页。
+- **agent 收到什么：** 元素的 selector、标签、id 和 class、HTML 片段、实际生效的 CSS（计算样式）、尺寸与位置、页面 URL、你的备注，以及一张带标记的截图。
+- **为什么有用：** agent 能在代码里找到对应组件并完成修改，而不是靠像素或“下面那个蓝色按钮”去猜。
+- **它不做什么：** 不新增 agent 工具，也不自动操作。浏览器和消息仍由你来驱动。
+
 **源码：** [github.com/AleixRocal/dsh-sidepanel-web](https://github.com/AleixRocal/dsh-sidepanel-web) · **npm 包：** [npmjs.com/package/dsh-sidepanel-web](https://www.npmjs.com/package/dsh-sidepanel-web)
 
 > [!TIP]
