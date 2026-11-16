@@ -205,7 +205,7 @@
       React.createElement(writerComp, {
         sessionId: "preview-session",
         inputActions: {
-          setDraft: (v) => { window.__draft = v; },
+          setDraft: (v) => { (window.__drafts = window.__drafts || []).push(v); window.__draft = v; },
           addAttachments: (ids) => { window.__attached = (window.__attached || []).concat(ids); }
         },
         useInput: () => ({ draft: "" })
@@ -262,7 +262,7 @@
       React.createElement(writerComp, {
         sessionId: "preview-session",
         inputActions: {
-          setDraft: (v) => { window.__draft = v; },
+          setDraft: (v) => { (window.__drafts = window.__drafts || []).push(v); window.__draft = v; },
           addAttachments: (ids) => { window.__attached = (window.__attached || []).concat(ids); }
         },
         useInput: () => ({ draft: "Make the checkout button stand out" })
@@ -285,11 +285,12 @@
         await sleep(120);
         const btn = [...card.querySelectorAll(".ab-btn")].find((b) => /Insert|插入/i.test(b.textContent));
         if (btn) btn.click();
-        await sleep(500);
+        await sleep(1400);
       }
     }
     window.__insert = {
       draft: window.__draft,
+      drafts: window.__drafts || [],
       cardGone: !document.querySelector(".ab-card"),
       toast: (document.querySelector(".ab-toast") || {}).textContent || null,
       count: (document.querySelector(".ab-count") || {}).textContent || null,

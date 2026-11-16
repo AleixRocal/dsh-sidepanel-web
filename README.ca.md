@@ -25,12 +25,12 @@
 
 `dsh-sidepanel-web` afegeix una pestanya **Navegador** al panell dret de DeepSeek Harness Web. És un navegador real al costat de la conversa, i pot convertir qualsevol element de la pàgina en un missatge precís per a l'agent.
 
-Tria el botó, el camp o la targeta de què parles, escriu què cal canviar i insereix-ho. El missatge porta el selector de l'element, el text, un fragment d'HTML, els estils calculats, la mida i la posició, i una captura amb l'anotació marcada. L'agent ja no ha d'endevinar a quin element et refereixes, i tu ja no has de descriure'l amb coordenades ni un munt de captures.
+Tria el botó, el camp o la targeta de què parles, escriu què cal canviar i insereix-ho. El missatge porta la teva nota, la identitat i el selector de l'element, la pàgina on viu i una captura amb l'anotació marcada. El payload DOM complet —HTML, estils calculats, mida i posició, codi del framework— s'escriu en un JSON d'anotació que l'agent obre només quan necessita raonar sobre el layout. L'agent ja no ha d'endevinar a quin element et refereixes, i tu ja no has de descriure'l amb coordenades ni un munt de captures.
 
 **D'un cop d'ull**
 
 - **Què és:** un connector de DSH Web que afegeix una pestanya **Navegador** al panell dret.
-- **Què rep l'agent:** el selector de l'element, l'etiqueta, l'id i les classes, un fragment d'HTML, el CSS que s'aplica (estils calculats), la mida i la posició, la URL de la pàgina, la teva nota i una captura amb la marca.
+- **Què rep l'agent:** la teva nota com a titular, la identitat i el selector de l'element, la URL de la pàgina, un punter `fitxer#n` al JSON de l'anotació (fragment d'HTML, estils calculats, mida i posició, codi del framework) i una captura amb la marca.
 - **Per què ajuda:** l'agent pot trobar el component al codi i fer el canvi, en lloc d'endevinar-ho a partir de píxels o de «el botó blau de baix».
 - **Què no fa:** no afegeix eines a l'agent ni automatitza res. El navegador i el missatge els condueixes tu.
 
@@ -79,22 +79,18 @@ Ni coordenades ni «el botó blau de baix». L'anotació diu com es diu l'elemen
 Cada anotació és un bloc de text, seguit d'una imatge amb tots els picks marcats:
 
 ```text
-[Annotation 1] button#save.primary
+[Annotation 1] "Fes aquesta acció primària sticky al mòbil"
+· Element: button#save (Save changes)
 · Selector: #save
-· Text: Save changes
-· HTML: <button id="save" class="btn primary" type="button">Save changes</button>
-· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); background=rgb(37, 99, 235); font=…; padding=12px 20px; radius=8px
-· Position: 132×40 @ (24, 680)
-· Page: Settings https://localhost:5173/settings
-· Note: Make this primary action sticky on mobile
-· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
+· Page: Settings — localhost:5173/settings
+· Details JSON: ~/.dsh/data/dsh-sidepanel-web/annotations/2026-11-16-localhost_5173.json#1
 ```
 
 > [!NOTE]
-> L'exemple mostra el payload amb la interfície en anglès. Amb la interfície en castellà, les etiquetes surten en castellà; els valors (selector, HTML, estils, posició) són els mateixos.
+> L'exemple mostra el payload amb la interfície en anglès. Amb la interfície en castellà, les etiquetes surten en castellà; els valors (selector, pàgina, ruta del JSON) són els mateixos.
 
-- **El text és un punter que l'agent pot seguir.** Rep la identitat de l'element (tag, id, classes, selector), un fragment d'HTML, els estils calculats que normalment importen (display, position, colors, font, padding, radius), la mida i la posició, la URL i el títol de la pàgina, i la teva nota. Pot fer servir el selector i l'HTML per trobar el component al codi, i els estils i la posició per raonar sobre el layout.
-- **La imatge és el context.** En inserir, es captura una vista de la pàgina amb cada pick numerat i emmarcat. DSH mostra una imatge sola a 240 px del costat llarg (i diverses imatges en un mateix missatge com a quadrats de 64 px), així que una sola imatge per inserció és deliberada: hi veus la pàgina, els pins i el que els envolta, i pots obrir l'original a mida completa.
+- **La nota és el missatge; la resta és un punter.** La teva nota encapçala el bloc, i després hi ha la identitat de l'element, el selector, la pàgina i un punter `fitxer#n` al detall estructurat. El JSON guarda el fragment d'HTML, els estils calculats que normalment importen (display, position, colors, font, padding, radius), la mida i la posició, la cadena de pares i el codi del framework. L'agent l'obre només quan necessita raonar sobre el layout, així el xat es manté llegible i no es malgasta context en un bolcat que no havies demanat.
+- **La imatge és el context, i surt de la pàgina que estàs veient.** En inserir, es captura una vista de la pàgina amb cada pick numerat i emmarcat. Les pàgines locals es capturen a través del proxy, així que un servidor de desenvolupament que redirigeix a una altra ruta o a un altre port es veu exactament com el renderitza l'iframe; les pàgines CDP es capturen de la pàgina viva. DSH mostra una imatge sola a 240 px del costat llarg (i diverses imatges en un mateix missatge com a quadrats de 64 px), així que una sola imatge per inserció és deliberada: hi veus la pàgina, els pins i el que els envolta, i pots obrir l'original a mida completa.
 - **Diversos picks, un sol missatge.** Afegeix tants elements com vulguis a la llista; Insereix envia tots els blocs d'anotació i una sola imatge amb tots els pins.
 
 ## Per què anotar en el DOM
@@ -137,7 +133,7 @@ El panell pot renderitzar una pàgina de dues maneres. Normalment no cal pensar-
 **Anotació**
 
 - **Inspector en passar el ratolí:** `tag#id.class  240×44  [role]`, per veure què estàs a punt de triar.
-- **Selecció d'element** amb selector, text, classes, fragment d'HTML, estils calculats, mida/posició i URL de la pàgina.
+- **Selecció d'element** amb selector, text, classes, fragment d'HTML, estils calculats, mida/posició i URL de la pàgina, desats al JSON de l'anotació.
 - **Pins numerats i notes.** Guarda diversos picks a la llista i insereix-los junts.
 - **Lliurament al composer** amb `InputActions.insertText`, de manera que l'anotació s'afegeix al cursor sense substituir l'esborrany.
 - **Una imatge anotada** per inserció, amb tots els picks marcats — no un retall minúscul per element.
@@ -256,7 +252,7 @@ DSH Web GUI
 
 La **meitat host** posseeix el Chromium, el proxy, les captures i el render compost; la **meitat client** és la pestanya que veus. El portador natiu manté la pàgina same-origin perquè l'overlay en pugui llegir el DOM i tu la puguis clicar; el portador remot envia un navegador real i reenvia la teva entrada. Tots dos alimenten el mateix payload d'anotació, així que el xat no depèn del portador que hagis fet servir.
 
-En prémer **Insereix**, el host renderitza una vista de la pàgina, torna a posar el pin de cada pick (per selector en una pàgina nativa, des de la pàgina viva en CDP) i retorna un sol PNG. Si aquest render falla, s'adjunta el retall del primer element, de manera que el missatge sempre té una imatge i tot el text.
+En prémer **Insereix**, el host captura una vista de la pàgina, torna a posar el pin de cada pick (per selector en una pàgina nativa, des de la pàgina viva en CDP) i retorna un sol PNG. Les pàgines locals es carreguen pel mateix camí de proxy que mostra l'iframe —primer una redirecció canònica, així un servidor de desenvolupament que mou la pàgina a una altra ruta o port es captura exactament com es renderitza— amb una galeta efímera que la ruta del proxy només accepta per a aquesta captura. Si la captura pel proxy falla, el servei cau a un render directe, de manera que el missatge encara té la imatge i tot el text.
 
 - **Meitat host** (`lib/index.js`, `lib/service.js`, `lib/cdp.js`, `lib/launcher.js`): rutes, cicle de vida del Chromium, CDP, captures, retalls, render compost.
 - **Proxy** (`lib/proxy.js`): baixa pàgines local/dev, reescriu URL, injecta el shim i l'overlay i manté un pot de galetes per origen.
@@ -289,7 +285,7 @@ Sí, explícitament: obre el lloc, clica el menú **⋯** i tria **Força la vis
 <details>
 <summary><strong>Per què el xat mostra una imatge i no un retall per anotació?</strong></summary>
 
-Perquè DSH dimensiona les imatges segons quantes n'arriben juntes: una imatge sola es mostra a 240 px del costat llarg i mai s'amplia per sobre de la seva mida natural, mentre que diverses imatges en un mateix missatge esdevenen quadrats de 64 px. Un retall d'un botó petit es veuria minúscul igualment. Per això Insereix envia una sola vista de la pàgina amb tots els picks marcats, i manté la ruta del retall de cada element al text.
+Perquè DSH dimensiona les imatges segons quantes n'arriben juntes: una imatge sola es mostra a 240 px del costat llarg i mai s'amplia per sobre de la seva mida natural, mentre que diverses imatges en un mateix missatge esdevenen quadrats de 64 px. Un retall d'un botó petit es veuria minúscul igualment. Per això Insereix envia una sola vista de la pàgina amb tots els picks marcats, i deixa el retall i el fragment d'HTML al JSON de l'anotació en lloc del text.
 </details>
 
 <details>
@@ -353,10 +349,11 @@ Les captures formen part del lliurament, així que segueixen una regla dura: **c
 
 ## Seguretat
 
-- Totes les rutes del host criden `connection.requestRejection(req)`; el servidor web està lligat a loopback.
+- Totes les rutes del host criden `connection.requestRejection(req)`; el servidor web està lligat a loopback. L'única excepció és la ruta del proxy que accepta la galeta efímera de captura d'abaix, que no pot arribar a cap altra ruta.
 - El proxy reescriptor només accepta **hosts locals/dev** (localhost, `*.local`, rangs privats, loopback i link-local). Les URL públiques es rebutgen i les gestiona el portador CDP, tret que l'origen s'hagi forçat explícitament a la vista nativa.
 - L'iframe natiu corre amb sandbox (`allow-scripts allow-forms allow-same-origin allow-popups` per a pàgines locals). `allow-same-origin` és necessari perquè el document del proxy conservi galetes i API; també vol dir que una pàgina proxificada comparteix l'origen de DSH. Només proxifica pàgines de confiança.
 - **Forçar la vista nativa és un override explícit.** Deixa passar un origen públic pel proxy same-origin; aquella pàgina comparteix l'origen de DSH (DOM, galetes, crides a l'API). La política per defecte continua rebutjant hosts públics. Força només llocs de confiança.
+- **Credencial del capturador.** El Chromium del plugin no té sessió de navegador de DSH, així que el host posa una galeta `sidepanel_render` a l'origen de DSH, limitada a `/api/sidepanel-web/p/`, HttpOnly, aleatòria per procés i esborrada després de la captura. Només desbloqueja aquella ruta del proxy; el JS de la pàgina no la pot llegir i no s'envia mai a un origen que no sigui DSH.
 - El navegador del host fa servir un perfil dedicat i ignora errors de certificat (necessari per als servidors locals autosignats). El portador CDP té les capacitats del navegador al qual l'apuntes.
 - El text de les anotacions i el contingut de la pàgina són dades no confiables per a l'agent.
 - Reporta vulnerabilitats en privat via [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md); no obris un issue públic.
@@ -368,7 +365,7 @@ Les captures formen part del lliurament, així que segueixen una regla dura: **c
 - **WebSocket/HMR no es proxien** al portador natiu. Els servidors de desenvolupament serveixen la pàgina, però el hot reload pot no funcionar; canvia a la vista CDP.
 - **Galetes** al portador natiu viuen en un pot per origen; alguns fluxos de login poden fallar. El portador CDP fa servir el perfil del navegador.
 - **Iframes cross-origin i shadow DOM tancat** no es poden anotar; només el contenidor.
-- **La imatge anotada és un render fresc al host** (un viewport de 1200 px d'ample que creix per encabir els picks, o la pàgina CDP en viu), així que un estat que només vivia al panell — un modal obert, un formulari a mitges — pot no aparèixer-hi. El text conserva cada pick, el seu fragment d'HTML i la ruta del retall.
+- **La imatge anotada és una captura nova** (un viewport de 1200 px d'ample que creix per encabir els picks, o la pàgina CDP en viu). Les pàgines locals es capturen a través del proxy amb les mateixes galetes que l'iframe, però un estat que només vivia a l'iframe — un modal obert, un formulari a mitges — pot no aparèixer-hi. Cada pick conserva el fragment d'HTML, els estils i la ruta del retall al JSON de l'anotació.
 - **La latència CDP** depèn del host i de la pàgina; el screencast té un límit de 15 fps per defecte.
 - **Alpha:** les API i el comportament poden canviar.
 

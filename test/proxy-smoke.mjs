@@ -112,9 +112,112 @@ assert.match(served.body, /forced target/, "the forced token must stream the tar
 await new Promise((resolve) => proxy.close(resolve));
 await new Promise((resolve) => target.close(resolve));
 
+// ---------------------------------------------------------------------------
+// Internal redirects. A dev server commonly answers / with 302 /app/ — or the
+// port forward inside a container moves the page to another port. The browser
+// must land on the canonical proxy URL, otherwise relative assets and the
+// overlay's origin stay pinned to the URL the user typed.
+// ---------------------------------------------------------------------------
+const listen = (server) => new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve(server.address().port)));
+const close = (server) => new Promise((resolve) => server.close(resolve));
+
+const appB = http.createServer((req, res) => {
+  if (req.url === "/home" || req.url === "/home?x=1") {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    res.end('<!doctype html><html><head><script src="/js/app.js"></script></head><body><a href="/next">next</a></body></html>');
+    return;
+  }
+  if (req.url === "/js/app.js") {
+    res.writeHead(200, { "content-type": "text/javascript" });
+    res.end("window.__app = true;");
+    return;
+  }
+  res.writeHead(404, { "content-type": "text/plain" });
+  res.end("no");
+});
+const portB = await listen(appB);
+const originB = `http://127.0.0.1:${portB}`;
+
+const appA = http.createServer((req, res) => {
+  if (req.url === "/") {
+    res.writeHead(302, { location: "/app/" });
+    res.end();
+    return;
+  }
+  if (req.url.startsWith("/app/")) {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    res.end('<!doctype html><html><head><link rel="stylesheet" href="css/app.css"></head><body><a href="/next">next</a></body></html>');
+    return;
+  }
+  if (req.url === "/cross") {
+    res.writeHead(302, { location: `${originB}/home?x=1` });
+    res.end();
+    return;
+  }
+  if (req.url === "/sneaky") {
+    res.writeHead(302, { location: `http://localhost.:${portB}/home` });
+    res.end();
+    return;
+  }
+  res.writeHead(404, { "content-type": "text/plain" });
+  res.end("no");
+});
+const portA = await listen(appA);
+const originA = `http://127.0.0.1:${portA}`;
+
+const redirectProxy = http.createServer((req, res) => {
+  // Mirror the real route: the overlay is built from this request's nonce, so
+  // a redirect that loses the nonce would inject an overlay that never matches
+  // the parent's handshake.
+  const nonce = new URL(req.url || "/", "http://x").searchParams.get("nonce") || "";
+  const overlay = `<script>window.__nonce=${JSON.stringify(nonce)}</script>`;
+  handleProxy(req, res, overlay).catch(() => { try { res.destroy(); } catch {} });
+});
+const redirectPort = await listen(redirectProxy);
+const base = `http://127.0.0.1:${redirectPort}${PROXY_PREFIX}`;
+
+const tokenA = encodeOrigin(originA);
+const tokenB = encodeOrigin(originB);
+
+// Same port, path redirect: one canonical 302, nonce preserved, relative asset
+// resolved against the page the server actually served.
+const first = await fetch(`${base}/${tokenA}/?nonce=abc123`, { redirect: "manual" });
+assert.equal(first.status, 302, "a path redirect must be answered with the canonical proxy URL");
+const firstLocation = first.headers.get("location") || "";
+assert.equal(firstLocation, `${PROXY_PREFIX}/${tokenA}/app/?nonce=abc123`, `path redirect location (${firstLocation})`);
+const second = await fetch(`http://127.0.0.1:${redirectPort}${firstLocation}`);
+assert.equal(second.status, 200, "the canonical URL must serve the redirected page");
+const secondBody = await second.text();
+assert.ok(secondBody.includes(`href="${PROXY_PREFIX}/${tokenA}/app/css/app.css"`), "relative CSS must resolve inside /app/");
+assert.ok(secondBody.includes(`href="${PROXY_PREFIX}/${tokenA}/next"`), "root-relative links must keep the target path");
+assert.ok(secondBody.includes('window.__nonce="abc123"'), "the nonce must survive the canonical redirect and reach the overlay");
+
+// Cross-port redirect: the token must switch to the port that served the page,
+// so every asset and the overlay origin point at that port.
+const cross = await fetch(`${base}/${tokenA}/cross`, { redirect: "manual" });
+assert.equal(cross.status, 302, "a cross-port redirect must be canonicalised");
+const crossLocation = cross.headers.get("location") || "";
+assert.ok(crossLocation.startsWith(`${PROXY_PREFIX}/${tokenB}/home`), `cross-port location (${crossLocation})`);
+const crossPage = await fetch(`http://127.0.0.1:${redirectPort}${crossLocation}`);
+assert.equal(crossPage.status, 200, "the destination port must serve through its own token");
+const crossBody = await crossPage.text();
+assert.ok(crossBody.includes(`src="${PROXY_PREFIX}/${tokenB}/js/app.js"`), "scripts must use the destination port token");
+assert.ok(!crossBody.includes(tokenA), "no URL may keep the source port token");
+
+// A redirect cannot smuggle the proxy onto a host the fence refuses.
+const sneaky = await fetch(`${base}/${tokenA}/sneaky`);
+assert.equal(sneaky.status, 502, "a redirect to a public-looking host must be refused");
+assert.match(await sneaky.text(), /not allowed/i, "the refusal must name the fence");
+
+await close(redirectProxy);
+await close(appA);
+await close(appB);
+
 console.log("proxy-smoke: ok");
 console.log("  importmap:", importmap.imports["rc-ui"]);
 console.log("  data-action kept, form action proxied");
 console.log("  proxy link → target path keeps every segment");
 console.log("  inline JS untouched (URL.createObjectURL survives)");
 console.log("  forced token:", forcedToken.slice(0, 12) + "… unlocks a public host");
+console.log("  path redirect →", firstLocation);
+console.log("  port redirect →", crossLocation);

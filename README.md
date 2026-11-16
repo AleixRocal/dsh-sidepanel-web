@@ -25,12 +25,12 @@
 
 `dsh-sidepanel-web` adds a **Browser** tab to the right sidebar of DeepSeek Harness Web. It is a real browser next to your conversation, and it can turn any element on the page into a precise message for the agent.
 
-Pick the button, field or card you are talking about, write what should change, and insert it. The message carries the element's selector, its text, an HTML excerpt, its computed styles, its size and position, and one screenshot with the annotation pinned. The agent no longer has to guess which element you mean — and you no longer have to describe it with coordinates or a pile of screenshots.
+Pick the button, field or card you are talking about, write what should change, and insert it. The message carries your note, the element's identity and selector, the page it lives on, and one screenshot with the annotation pinned. The full DOM payload — HTML, computed styles, size and position, framework source — is written to an annotation JSON the agent opens only when it needs to reason about the layout. The agent no longer has to guess which element you mean, and you no longer have to describe it with coordinates or a pile of screenshots.
 
 **At a glance**
 
 - **What it is:** a DSH Web plugin that adds a **Browser** tab to the right sidebar.
-- **What the agent gets:** the element's selector, tag, id and classes, an HTML excerpt, the CSS that applies (computed styles), its size and position, the page URL, your note, and one screenshot with the pick pinned.
+- **What the agent gets:** your note as the headline, the element's identity and selector, the page URL, a `file#n` pointer to the annotation JSON (HTML excerpt, computed styles, size and position, framework source), and one screenshot with the pick pinned.
 - **Why it helps:** the agent can find the component in the code and make the change, instead of guessing from pixels or from “the blue button at the bottom”.
 - **What it does not do:** it adds no agent tools and runs no automation. You still drive the browser and send the message.
 
@@ -79,19 +79,15 @@ No coordinates and no “the blue button at the bottom”. The annotation names 
 Each annotation is one block of text, followed by one image with every pick pinned:
 
 ```text
-[Annotation 1] button#save.primary
+[Annotation 1] "Make this primary action sticky on mobile"
+· Element: button#save (Save changes)
 · Selector: #save
-· Text: Save changes
-· HTML: <button id="save" class="btn primary" type="button">Save changes</button>
-· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); background=rgb(37, 99, 235); font=…; padding=12px 20px; radius=8px
-· Position: 132×40 @ (24, 680)
-· Page: Settings https://localhost:5173/settings
-· Note: Make this primary action sticky on mobile
-· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
+· Page: Settings — localhost:5173/settings
+· Details JSON: ~/.dsh/data/dsh-sidepanel-web/annotations/2026-11-16-localhost_5173.json#1
 ```
 
-- **The text is a pointer the agent can follow.** It gets the element's identity (tag, id, classes, selector), an HTML excerpt, the computed styles that usually matter (display, position, colors, font, padding, radius), the element's size and position, the page URL and title, and your note. It can use the selector and the HTML to find the component in the code, and the styles and position to reason about the layout.
-- **The image is the context.** Insert captures one viewport screenshot with every pick numbered and outlined. DSH shows a lone image at 240px on its long edge (and several images in one message as 64px squares), so one image per Insert is deliberate: you see the page, the pins and what surrounds them, and you can open the original full size.
+- **The note is the message; the rest is a pointer.** Your note headlines the block, then the element's identity, its selector, the page and a `file#n` pointer to the structured detail. The JSON holds the HTML excerpt, the computed styles that usually matter (display, position, colors, font, padding, radius), the size and position, the parent chain and the framework source. The agent reads it only when it needs to reason about layout, so the chat stays readable and no context is wasted on a dump you did not ask for.
+- **The image is the context, and it comes from the page you are looking at.** Insert captures one viewport screenshot with every pick numbered and outlined. Local pages are captured through the proxy, so a dev server that redirects to another path or port is shown exactly as the iframe renders it; CDP pages are captured from the live page. DSH shows a lone image at 240px on its long edge (and several images in one message as 64px squares), so one image per Insert is deliberate: you see the page, the pins and what surrounds them, and you can open the original full size.
 - **Several picks, one message.** Add as many elements as you need to the list; Insert sends all the annotation blocks plus a single image with all the pins.
 
 ## Why annotate in the DOM
@@ -134,7 +130,7 @@ The panel can render a page in two ways. You normally do not need to think about
 **Annotating**
 
 - **Hover inspector:** `tag#id.class  240×44  [role]`, so you can see what you are about to pick.
-- **Element pick** with selector, text, classes, an HTML excerpt, computed styles, size/position and page URL.
+- **Element pick** with selector, text, classes, an HTML excerpt, computed styles, size/position and page URL, collected into the annotation JSON.
 - **Numbered pins and notes.** Keep several picks in the list, then insert them together.
 - **Composer hand-off** with `InputActions.insertText`, so the annotation is added at the caret without replacing your draft.
 - **One annotated image** per Insert, with every pick pinned — not one tiny crop per element.
@@ -253,7 +249,7 @@ DSH Web GUI
 
 The **host half** owns the Chromium, the proxy, the screenshots and the composite render; the **client half** is the tab you see. The native carrier keeps the page same-origin so the overlay can read its DOM and you can click it; the remote carrier streams a real browser and forwards your input. Both feed the same annotation payload, so the chat does not care which carrier you used.
 
-On **Insert**, the host renders one viewport screenshot, re-applies every pick's pin (by selector for a native page, from the live page for CDP) and returns a single PNG. If that render fails, the first element crop is attached instead, so the message always has one image and all the text.
+On **Insert**, the host captures one viewport screenshot and re-applies every pick's pin (by selector for a native page, from the live page for CDP) and returns a single PNG. Local pages are loaded through the same proxy path the iframe shows — one canonical redirect first, so a dev server that moves the page to another path or port is captured exactly as it renders — using a short-lived cookie the proxy route accepts for that render only. If the proxy capture fails, the service falls back to a direct render, so the message still has its image and all the text.
 
 - **Host half** (`lib/index.js`, `lib/service.js`, `lib/cdp.js`, `lib/launcher.js`): routes, Chromium lifecycle, CDP, screenshots, crops, composite render.
 - **Proxy** (`lib/proxy.js`): fetches local/dev pages, rewrites URLs, injects the shim and overlay, keeps a per-origin cookie jar.
@@ -286,7 +282,7 @@ Yes, explicitly: open the site, click the **⋯** menu and choose **Force native
 <details>
 <summary><strong>Why does the chat show one image instead of a crop per annotation?</strong></summary>
 
-Because DSH sizes images by how many arrive together: a lone image is shown at 240px on its long edge and is never upscaled past its natural size, while several images in one message become 64px squares. A crop of a small button would look tiny either way. Insert therefore sends one viewport screenshot with every pick pinned, and keeps each element's crop path in the text.
+Because DSH sizes images by how many arrive together: a lone image is shown at 240px on its long edge and is never upscaled past its natural size, while several images in one message become 64px squares. A crop of a small button would look tiny either way. Insert therefore sends one viewport screenshot with every pick pinned, and leaves the crop and the HTML excerpt in the annotation JSON instead of the text.
 </details>
 
 <details>
@@ -350,10 +346,11 @@ Screenshots are part of the deliverable, so they follow a hard rule: **no real u
 
 ## Security
 
-- Every host route calls `connection.requestRejection(req)`; the web server is loopback-bound.
+- Every host route calls `connection.requestRejection(req)`; the web server is loopback-bound. The one exception is the proxy route accepting the per-process render cookie below, which cannot reach any other route.
 - The rewriting proxy only accepts **local/dev hosts** (localhost, `*.local`, private, loopback and link-local ranges). Public URLs are refused and handled by the CDP carrier, unless the origin was explicitly forced into the native view.
 - The native iframe runs sandboxed (`allow-scripts allow-forms allow-same-origin allow-popups` for local proxy pages). `allow-same-origin` is required for the proxy document to keep its cookies and APIs; it also means a proxied page shares the DSH origin. Only proxy pages you trust.
 - **Force native view is an explicit override.** It lets a public origin through the same-origin proxy; that page then shares the DSH origin (DOM, cookies, API calls). The default policy still refuses public hosts. Only force sites you trust.
+- **Screenshot renderer credential.** The plugin's Chromium has no DSH browser session, so the host sets a `sidepanel_render` cookie for the DSH origin, scoped to `/api/sidepanel-web/p/`, HttpOnly, random per process and deleted after the capture. It unlocks that proxy route only; page JS cannot read it and it is never sent to a non-DSH origin.
 - The host browser uses a dedicated profile and ignores certificate errors for local self-signed dev servers. The CDP carrier has the capabilities of the browser you point it at.
 - Annotation text and page content are treated as untrusted data by the agent.
 - Report vulnerabilities privately through [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md); do not open a public issue.
@@ -365,7 +362,7 @@ Screenshots are part of the deliverable, so they follow a hard rule: **no real u
 - **WebSocket/HMR is not proxied** in the native carrier. Dev servers still serve the page, but hot reload may not work; switch to the CDP view for HMR.
 - **Cookies** in the native carrier live in a per-origin host jar; some login flows may still fail. The CDP carrier uses the browser's own profile.
 - **Cross-origin iframes and closed shadow DOM** cannot be annotated; only their container.
-- **The annotated image is a fresh render on the host** (a 1200px-wide viewport that grows to fit the picks, or the live CDP page), so state that lived only in the panel — an open modal, a half-filled form — may not appear. The text keeps every pick, its HTML excerpt and its crop path.
+- **The annotated image is a fresh capture** (a 1200px-wide viewport that grows to fit the picks, or the live CDP page). Local pages are captured through the proxy with the same cookies the iframe uses, but state that lived only in the iframe — an open modal, a half-filled form — may not appear. Every pick's HTML excerpt, styles and crop path stay in the annotation JSON.
 - **CDP latency** depends on the host and the page; the screencast caps at 15 fps by default.
 - **Alpha:** APIs and behaviour may change.
 

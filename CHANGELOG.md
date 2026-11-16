@@ -4,6 +4,42 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **The annotation block is compact.** The note is the headline, followed by
+  the element, selector, page and a `file#n` pointer; HTML, computed styles,
+  geometry and framework source moved into the annotation JSON. The chat stays
+  readable and the agent opens the structured detail only when it needs it.
+- **One image, captured from the proxied page.** The native carrier's Insert
+  screenshot now loads the same proxy path as the iframe, so a dev server that
+  redirects to another path or to an internal port is captured exactly as it
+  renders in the panel. The renderer gets a short-lived, path-scoped cookie
+  (HttpOnly, deleted after the capture) because it has no DSH browser session;
+  if the proxy refuses, the direct render stays as a fallback.
+- Annotation numbers in the JSON continue across sessions, so `file#n` never
+  points at two annotations on the same day.
+
+### Added
+
+- **Redirect-aware proxy.** A page that answers `/` with `/app/`, or with a
+  port hop (a container forward, a dev server on another port), is redirected
+  once to the canonical proxy URL of the final page. Relative assets and the
+  overlay's `__AB_TARGET__` then agree with the URL the browser actually shows.
+  The target fence is re-checked on every redirect hop, and the overlay reports
+  the final URL so annotations cite the page the user is looking at.
+
+### Tests
+
+- `test/proxy-smoke.mjs` covers path redirects, port hops, nonce preservation
+  on the canonical redirect, and a redirect that tries to reach a refused host.
+- `test/preview/behavior.mjs` asserts the compact block (note first, no
+  HTML/styles/screenshot paths) and that the native composite carries the proxy
+  path; the harness records the composite request.
+- `test/composite-smoke.mjs` captures through a cookie-gated proxy fixture that
+  redirects once, and checks the direct-render fallback when the proxy refuses.
+
 ## [0.4.4] — 2026-11-12
 
 ### Documentation

@@ -25,12 +25,12 @@
 
 `dsh-sidepanel-web` 在 DeepSeek Harness Web 的右侧边栏里加了一个 **浏览器** 标签页。它是对话旁边的一个真实浏览器，而且能把页面上的任意元素变成给 agent 的一条精确消息。
 
-选中你正在说的按钮、输入框或卡片，写下要改什么，然后插入。消息里带着元素的 selector、文本、HTML 片段、计算样式、尺寸和位置，以及一张带标注的截图。Agent 不用再猜你指的是哪个元素，你也不用再用坐标或一堆截图去描述它。
+选中你正在说的按钮、输入框或卡片，写下要改什么，然后插入。消息里带着你的备注、元素的身份和 selector、它所在的页面，以及一张带标注钉的截图。完整的 DOM 数据（HTML、计算样式、尺寸和位置、框架源码）写进标注 JSON，agent 只在需要推断布局时才打开它。Agent 不用再猜你指的是哪个元素，你也不用再用坐标或一堆截图去描述它。
 
 **一眼看懂**
 
 - **是什么：** 一个 DSH Web 插件，在右侧边栏添加 **浏览器** 标签页。
-- **agent 收到什么：** 元素的 selector、标签、id 和 class、HTML 片段、实际生效的 CSS（计算样式）、尺寸与位置、页面 URL、你的备注，以及一张带标记的截图。
+- **agent 收到什么：** 你的备注（放在第一行）、元素身份和 selector、页面 URL、指向标注 JSON 的 `文件#n`（HTML 片段、计算样式、尺寸与位置、框架源码），以及一张带标记的截图。
 - **为什么有用：** agent 能在代码里找到对应组件并完成修改，而不是靠像素或“下面那个蓝色按钮”去猜。
 - **它不做什么：** 不新增 agent 工具，也不自动操作。浏览器和消息仍由你来驱动。
 
@@ -79,22 +79,18 @@
 每条标注是一段文本，后面跟着一张带所有标注钉的图片：
 
 ```text
-[Annotation 1] button#save.primary
+[Annotation 1] "把这个主操作在移动端做成吸底"
+· Element: button#save (Save changes)
 · Selector: #save
-· Text: Save changes
-· HTML: <button id="save" class="btn primary" type="button">Save changes</button>
-· Styles: display=inline-block; position=static; color=rgb(255, 255, 255); background=rgb(37, 99, 235); font=…; padding=12px 20px; radius=8px
-· Position: 132×40 @ (24, 680)
-· Page: Settings https://localhost:5173/settings
-· Note: Make this primary action sticky on mobile
-· Screenshot: ~/.dsh/data/dsh-sidepanel-web/crops/…
+· Page: Settings — localhost:5173/settings
+· Details JSON: ~/.dsh/data/dsh-sidepanel-web/annotations/2026-11-16-localhost_5173.json#1
 ```
 
 > [!NOTE]
-> 示例是英文界面下的 payload。界面切换为西班牙语时，字段标签会变成西班牙语；selector、HTML、样式和位置这些值不变。
+> 示例是英文界面下的 payload。界面切换为西班牙语时，字段标签会变成西班牙语；selector、页面和 JSON 路径这些值不变。
 
-- **文本是 agent 能顺着找下去的线索。** 它会收到元素身份（tag、id、class、selector）、一段 HTML、通常最相关的计算样式（display、position、颜色、字体、padding、radius）、元素的尺寸和位置、页面 URL 和标题，以及你的备注。它可以用 selector 和 HTML 在代码里定位组件，用样式和位置推断布局。
-- **图片是上下文。** 插入时，宿主机会渲染一张页面视图，给每个 pick 编号、描边。DSH 对单张图片按长边 240 px 显示（同一消息里多张图片则变成 64 px 方块），所以每次插入只发一张图是刻意的：你看到页面、标注钉和它们周围的内容，也可以点开原图看全尺寸。
+- **备注就是消息，其余都是线索。** 你的备注放在第一行，然后是元素身份、selector、页面，以及指向结构化详情的 `文件#n`。JSON 里保存 HTML 片段、通常最相关的计算样式（display、position、颜色、字体、padding、radius）、尺寸和位置、父级链和框架源码。agent 只在需要推断布局时才读取它，所以对话保持简洁，不会浪费上下文在你没要求的整段 dump 上。
+- **图片是上下文，而且来自你正在看的页面。** 插入时捕获一张页面视图，给每个 pick 编号、描边。本地页面通过代理捕获，所以开发服务器重定向到别的路径或端口时，图片和 iframe 里看到的一致；CDP 页面则从实时页面捕获。DSH 对单张图片按长边 240 px 显示（同一消息里多张图片则变成 64 px 方块），所以每次插入只发一张图是刻意的：你看到页面、标注钉和它们周围的内容，也可以点开原图看全尺寸。
 - **多个 pick，一条消息。** 把需要的元素都加入列表；插入时会发送所有标注文本，外加一张带全部标注钉的图片。
 
 ## 为什么在 DOM 里标注
@@ -137,7 +133,7 @@
 **标注**
 
 - **悬停检查器：** `tag#id.class  240×44  [role]`，先看清再选。
-- **元素选择**，带 selector、文本、class、HTML 片段、计算样式、尺寸/位置和页面 URL。
+- **元素选择**，带 selector、文本、class、HTML 片段、计算样式、尺寸/位置和页面 URL，全部写进标注 JSON。
 - **编号标注钉和备注。** 可以把多个 pick 放进列表，一起插入。
 - **输入框交接**，用 `InputActions.insertText` 在光标处插入，不覆盖你的草稿。
 - **每次插入一张带标注的图片**，所有 pick 都带钉 —— 不是每个元素一张小裁图。
@@ -256,7 +252,7 @@ DSH Web GUI
 
 **宿主半** 拥有 Chromium、代理、截图和合成渲染；**客户端半** 是你看到的标签页。原生载体让页面保持同源，这样 overlay 能读 DOM、你也能点击；远程载体推流真实浏览器并转发输入。两者喂给同一套标注 payload，所以对话不关心你用了哪个载体。
 
-点击 **插入** 时，宿主机渲染一张页面视图，重新给每个 pick 打钉（原生页面按 selector，CDP 用当前页面），返回一张 PNG。如果渲染失败，就改附第一个元素的裁图，所以消息始终有一张图和全部文本。
+点击 **插入** 时，宿主机捕获一张页面视图，重新给每个 pick 打钉（原生页面按 selector，CDP 用当前页面），返回一张 PNG。本地页面走 iframe 正在用的同一条代理路径 —— 先经过一次规范化重定向，所以开发服务器把页面换到别的路径或端口时，图片和实际渲染一致 —— 并使用一个只对本次捕获有效的短时 Cookie。代理捕获失败时回退到直接渲染，消息仍然有图和全部文本。
 
 - **宿主半**（`lib/index.js`、`lib/service.js`、`lib/cdp.js`、`lib/launcher.js`）：路由、Chromium 生命周期、CDP、截图、裁图、合成渲染。
 - **代理**（`lib/proxy.js`）：拉取本地/开发页面、重写 URL、注入 shim 和 overlay、维护按 origin 的 Cookie 罐。
@@ -289,7 +285,7 @@ DSH Web GUI
 <details>
 <summary><strong>为什么对话里只有一张图，而不是每条标注一张裁图？</strong></summary>
 
-因为 DSH 按图片数量决定尺寸：单独一张图按长边 240 px 显示，且不会放大到超过原始尺寸；同一消息里多张图会变成 64 px 方块。小按钮的裁图在两种情况下都会显得很小。所以插入时发送一张带全部标注钉的页面视图，而每个元素的裁图路径仍保留在文本里。
+因为 DSH 按图片数量决定尺寸：单独一张图按长边 240 px 显示，且不会放大到超过原始尺寸；同一消息里多张图会变成 64 px 方块。小按钮的裁图在两种情况下都会显得很小。所以插入时发送一张带全部标注钉的页面视图，而每个元素的裁图和 HTML 片段留在标注 JSON 里，不再塞进文本。
 </details>
 
 <details>
@@ -353,10 +349,11 @@ DSH Web GUI
 
 ## 安全
 
-- 宿主机的每条路由都会调用 `connection.requestRejection(req)`；Web 服务器绑定在回环地址。
+- 宿主机的每条路由都会调用 `connection.requestRejection(req)`；Web 服务器绑定在回环地址。唯一的例外是代理路由接受下面这个一次性截图凭据，它无法访问其他任何路由。
 - 重写代理默认只接受 **本地/开发主机**（localhost、`*.local`、私有、回环和 link-local 范围）。公共 URL 会被拒绝，交给 CDP 载体 —— 除非该 origin 被显式强制到原生视图。
 - 原生 iframe 在 sandbox 里运行（本地代理页面用 `allow-scripts allow-forms allow-same-origin allow-popups`）。`allow-same-origin` 是代理文档保留 Cookie 和 API 所必需的；这也意味着被代理页面与 DSH 同源。只代理你信任的页面。
 - **强制原生视图是显式覆盖。** 它让公共 origin 走同源代理；该页面因而与 DSH 同源（DOM、Cookie、API 调用）。默认策略仍然拒绝公共主机。只强制你信任的站点。
+- **截图渲染凭据。** 插件自己的 Chromium 没有 DSH 浏览器会话，所以宿主机在 DSH origin 上设置一个 `sidepanel_render` Cookie：限定在 `/api/sidepanel-web/p/` 路径、HttpOnly、每次进程随机生成、截图后立即删除。它只解锁这条代理路由；页面 JS 读不到，也永远不会发往非 DSH origin。
 - 宿主机浏览器使用专用配置，并忽略证书错误（本地自签名开发服务器需要）。CDP 载体拥有你指向的浏览器的能力。
 - 标注文本和页面内容对 agent 来说是不可信数据。
 - 通过 [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md) 私下报告漏洞；不要开公开 issue。
@@ -368,7 +365,7 @@ DSH Web GUI
 - **WebSocket/HMR 不被代理**（原生载体）。开发服务器仍能提供页面，但热更新可能不工作；需要时切到 CDP 视图。
 - **Cookie** 在原生载体里按 origin 存在宿主机罐子中；某些登录流程仍可能失败。CDP 载体使用浏览器自己的配置。
 - **跨域 iframe 和 closed shadow DOM** 不能标注；只能标注容器。
-- **带标注的图片是宿主机上的重新渲染**（1200 px 宽的视口，会按 picks 增长；或者当前 CDP 页面），所以只存在于面板里的状态 —— 打开的 modal、填了一半的表单 —— 可能不会出现。文本保留每个 pick、它的 HTML 片段和裁图路径。
+- **带标注的图片是一次新的捕获**（1200 px 宽的视口，会按 picks 增长；或者当前 CDP 页面）。本地页面通过代理捕获，用的是和 iframe 相同的 Cookie，但只存在于 iframe 里的状态 —— 打开的 modal、填了一半的表单 —— 可能不会出现。每个 pick 的 HTML 片段、样式和裁图路径都保留在标注 JSON 里。
 - **CDP 延迟** 取决于宿主机和页面；screencast 默认上限 15 fps。
 - **Alpha：** API 和行为可能变化。
 

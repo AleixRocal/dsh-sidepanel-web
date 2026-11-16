@@ -68,11 +68,15 @@ Checks the regressions that are easy to bring back: **Esc leaves annotate mode
 in the CDP carrier** (focus is not on the panel root), **Esc inside the native
 iframe** (the overlay forwards it as a cancel message), **a forced public URL
 mounts the proxy iframe** (with the `f.` token and the same-origin warning), and
-**Insert attaches exactly one composite image** (`annotations.png`) on both the
-CDP and the native path (`conversation.createDrafts` +
-`inputActions.addAttachments`, not just a path). The mock server serves a 1×1 PNG
-from `/crop` and `/composite`; the harness fakes the conversation service and
-records the file type and size.
+**Insert sends a compact annotation block** (the note is the headline; element,
+selector, page and the detail pointer follow; no HTML/styles/screenshot paths)
+and **attaches exactly one composite image** (`annotations.png`) on both the CDP
+and the native path (`conversation.createDrafts` + `inputActions.addAttachments`,
+not just a path). On the native path the composite request must carry the
+`/api/sidepanel-web/p/…` proxy path the iframe is showing, so redirected ports
+are captured from the same view. The mock server serves a 1×1 PNG from
+`/composite` (and `/crop` for the CDP fallback); the harness fakes the
+conversation service and records the file type, size and the composite body.
 
 ## Batch screenshots
 

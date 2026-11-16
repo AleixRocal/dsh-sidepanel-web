@@ -30,6 +30,7 @@ let shotCount = 0;
 let devicePreset = "responsive";
 let lastNavigate = "";
 let lastViewport = null;
+let lastComposite = null;
 
 const DEVICE = {
   responsive: { preset: "responsive", label: "Adaptive (fits the panel)", width: 0, height: 0, dpr: 1, mobile: false, touch: false },
@@ -178,6 +179,9 @@ ${overlayScript(nonce, "http://shop.local")}</body></html>`;
     });
   }
   if (p === "/api/sidepanel-web/composite" && req.method === "POST") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    try { lastComposite = JSON.parse(body || "{}"); } catch {}
     return json(res, 200, {
       ok: true,
       file: "/tmp/annotations.png",
@@ -197,7 +201,7 @@ ${overlayScript(nonce, "http://shop.local")}</body></html>`;
     try { lastNavigate = JSON.parse(body || "{}").url || ""; } catch {}
     return json(res, 200, { ok: true, page: PAGE });
   }
-  if (p === "/__last") return json(res, 200, { navigate: lastNavigate, device: deviceState() });
+  if (p === "/__last") return json(res, 200, { navigate: lastNavigate, device: deviceState(), composite: lastComposite });
   if (p === "/api/sidepanel-web/device" && req.method === "POST") {
     let body = "";
     for await (const chunk of req) body += chunk;

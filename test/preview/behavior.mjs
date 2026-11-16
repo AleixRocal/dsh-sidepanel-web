@@ -157,7 +157,17 @@ async function main() {
   );
 
   assert.ok(results.insert, "insert: no result");
-  assert.ok(results.insert.draft && results.insert.draft.includes("Screenshot:"), "insert: crop path missing from the text");
+  // The chat block is compact: the note is the headline, then element,
+  // selector, page and the structured detail pointer. No HTML/styles dump and
+  // no screenshot path — the image is attached separately.
+  const insertDraft = results.insert.draft || "";
+  assert.ok(
+    insertDraft.includes('[Annotation 1] "Make the primary action sticky on mobile"'),
+    `insert: the note must headline the block (${insertDraft})`
+  );
+  assert.match(insertDraft, /· Element: button#place-order/, "insert: the element is missing");
+  assert.match(insertDraft, /· Details JSON: \/tmp\/annotation\.json#1/, "insert: the detail pointer is missing");
+  assert.ok(!/· HTML:|· Styles:|Screenshot:|<button/i.test(insertDraft), "insert: the block must stay compact");
   assert.ok(Array.isArray(results.insert.attached) && results.insert.attached.length > 0, "insert: no attachment id reached the composer");
   assert.ok(results.insert.draftFiles && results.insert.draftFiles.length > 0, "insert: conversation.createDrafts received no file");
   assert.equal(results.insert.draftFiles.length, 1, "insert: expected exactly one annotated image, not one per pick");
@@ -167,17 +177,42 @@ async function main() {
   assert.ok(results["insert-native"], "insert-native: no result");
   assert.equal(results["insert-native"].error, null, "insert-native: picking inside the iframe failed");
   assert.equal(results["insert-native"].picked, true, "insert-native: the fixture button was not picked");
+  const nativeDraft = results["insert-native"].draft || "";
+  assert.equal(
+    nativeDraft.split("\n")[0],
+    '[Annotation 1] "Make the primary action sticky on mobile"',
+    `insert-native: the note must be the headline (${nativeDraft.split("\n")[0]})`
+  );
+  assert.match(nativeDraft, /· Element: button#cta/, "insert-native: the element is missing");
+  assert.match(nativeDraft, /· Selector: #cta/, "insert-native: the selector is missing");
+  assert.match(nativeDraft, /· Details JSON: \/tmp\/annotation\.json#1/, "insert-native: the detail pointer is missing");
+  assert.ok(!/· HTML:|· Styles:|Screenshot:|<button/i.test(nativeDraft), "insert-native: the block must stay compact");
   assert.equal(results["insert-native"].files.length, 1, "insert-native: expected exactly one annotated image");
   assert.equal(results["insert-native"].files[0].name, "annotations.png", "insert-native: the image is not the composite");
   assert.equal(results["insert-native"].files[0].type, "image/png", "insert-native: composite is not a PNG");
   assert.ok(results["insert-native"].attached.length > 0, "insert-native: no attachment reached the composer");
+
+  // The native image must be captured from the proxy path the iframe shows,
+  // not from a second direct render (that is what breaks redirected ports).
+  const last = await (await fetch(`${BASE}/__last`)).json();
+  assert.ok(last.composite, "insert-native: no composite request was recorded");
+  assert.match(
+    String(last.composite.proxyPath || ""),
+    /^\/api\/sidepanel-web\/p\//,
+    "insert-native: the composite did not go through the proxy"
+  );
+  assert.match(String(last.composite.url || ""), /shop\.local/, "insert-native: the real page URL was lost");
+  assert.ok(!last.composite.proxyPath.includes("undefined"), "insert-native: the proxy path is malformed");
 
   console.log("behavior: ok");
   console.log("  Esc leaves annotate mode (CDP):", results.esc.before, "->", results.esc.after);
   console.log("  Esc leaves annotate mode (native iframe):", results["esc-native"].before, "->", results["esc-native"].after);
   console.log("  forced native on a public URL:", results["force-native"].src.split("?")[0], "warn:", results["force-native"].warn);
   console.log("  forced native via the ⋯ menu:", results["force-native-menu"].src.split("?")[0], "item:", results["force-native-menu"].found);
-  console.log("  crop attached:", results.insert.draftFiles[0], "ids:", results.insert.attached.join(","));
+  const annotationLine = insertDraft.split("\n").find((line) => line.startsWith("[Annotation")) || insertDraft.split("\n")[0];
+  console.log("  compact insertion:", JSON.stringify(annotationLine));
+  console.log("  composite through proxy:", last.composite.proxyPath.split("?")[0]);
+  console.log("  image attached:", results.insert.draftFiles[0], "ids:", results.insert.attached.join(","));
 
   client.close();
   chrome.kill("SIGTERM");
