@@ -113,10 +113,12 @@ try {
   const buf = Buffer.from(out.data, "base64");
   assert.equal(buf.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", "composite is not a PNG");
   const width = buf.readUInt32BE(16);
-  const height = buf.readUInt32BE(20);
-  assert.ok(width > 0 && height > 0, "composite PNG has no dimensions");
-  assert.equal(out.size.w, width, "reported width differs from the PNG");
-  assert.equal(out.size.h, height, "reported height differs from the PNG");
+  const pxHeight = buf.readUInt32BE(20);
+  assert.ok(width > 0 && pxHeight > 0, "composite PNG has no dimensions");
+  // The PNG is rendered at 2x (default shotScale); size stays in CSS px.
+  assert.equal(out.size.w * 2, width, "PNG width is not 2x the reported CSS width");
+  assert.equal(out.size.h * 2, pxHeight, "PNG height is not 2x the reported CSS height");
+  const height = out.size.h;
   // The two picks are ~980px apart; the capture must have grown past the
   // default 800px viewport to fit them on the same surface.
   assert.ok(height > 900, `composite viewport did not grow for both picks (${height})`);

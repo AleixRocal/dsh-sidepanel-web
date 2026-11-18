@@ -9,7 +9,8 @@
  */
 import assert from "node:assert/strict";
 import http from "node:http";
-import { rewriteHtml, encodeOrigin, decodeOrigin, isForcedToken, isPrivateHost, isProxyTargetAllowed, handleProxy, PROXY_PREFIX } from "../lib/proxy.js";
+import zlib from "node:zlib";
+import { rewriteHtml, encodeOrigin, decodeOrigin, isForcedToken, isPrivateHost, isProxyTargetAllowed, handleProxy, isBotChallenge, PROXY_PREFIX, proxifyUrl, rewriteJs } from "../lib/proxy.js";
 import { targetUrlFrom } from "../lib/page.js";
 
 const origin = "https://app.local";
@@ -65,6 +66,14 @@ assert.equal(targetUrlFrom(`${P}/`, "?x=1", "#h", P, "https://app.local"), "http
 assert.equal(targetUrlFrom(P, "", "", P, "https://app.local"), "https://app.local/");
 assert.equal(targetUrlFrom("/producte/A2082", "", "", P, "https://app.local"), "");
 
+// The panel's `nonce` param must never reach the target URL (address bar).
+const NT = "https://www.deepseek.com";
+const NP = `${P}/en/`;
+assert.equal(targetUrlFrom(NP, "?nonce=x", "", P, NT), `${NT}/en/`);
+assert.equal(targetUrlFrom(NP, "?a=1&nonce=x", "", P, NT), `${NT}/en/?a=1`);
+assert.equal(targetUrlFrom(NP, "?nonce=x&a=1", "", P, NT), `${NT}/en/?a=1`);
+assert.equal(targetUrlFrom(NP, "?a=1&nonce=x&b=2", "#h", P, NT), `${NT}/en/?a=1&b=2#h`);
+
 // Forced native view: the `f.` prefix marks a public origin the user chose to
 // proxy. It must survive decode and unlock the target fence, while a normal
 // token stays unforced and public hosts stay refused.
@@ -88,6 +97,12 @@ assert.ok(
 // forced token and served with it. The servers bind the dual stack, so the test
 // is independent of whether localhost. resolves to ::1 or 127.0.0.1.
 const target = http.createServer((req, res) => {
+  if (req.url === "/apex") {
+    // apex -> www hop on the same public-looking host
+    res.writeHead(302, { location: `http://www.localhost.:${target.address().port}/` });
+    res.end();
+    return;
+  }
   res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
   res.end("<html><body>forced target</body></html>");
 });
@@ -100,6 +115,8 @@ await new Promise((resolve) => proxy.listen(0, resolve));
 const proxyPort = proxy.address().port;
 const nearLocalOrigin = `http://localhost.:${targetPort}`;
 assert.equal(isPrivateHost(new URL(nearLocalOrigin).hostname), false, "the fixture host must look public to the fence");
+assert.equal(isPrivateHost("fda.gov"), false);
+assert.equal(isPrivateHost("fd12::1"), true);
 const fetchProxy = async (token) => {
   const res = await fetch(`http://127.0.0.1:${proxyPort}${PROXY_PREFIX}/${token}/`);
   return { status: res.status, body: await res.text() };
@@ -109,6 +126,14 @@ assert.equal(refused.status, 403, "a public-looking host must be refused without
 const served = await fetchProxy(encodeOrigin(nearLocalOrigin, true));
 assert.equal(served.status, 200, "the forced token must unlock the same host");
 assert.match(served.body, /forced target/, "the forced token must stream the target body");
+// apex -> www under a forced token: allowed, and the canonical token stays forced.
+const wwwHop = await fetch(`http://127.0.0.1:${proxyPort}${PROXY_PREFIX}/${encodeOrigin(nearLocalOrigin, true)}/apex`, { redirect: "manual" });
+assert.equal(wwwHop.status, 302, "a forced apex->www redirect must be followed");
+assert.ok((wwwHop.headers.get("location") || "").startsWith(`${PROXY_PREFIX}/f.`), "the www token must stay forced");
+const wwwServed = await fetchProxy(encodeOrigin(`http://www.localhost.:${targetPort}`, true));
+assert.equal(wwwServed.status, 200, "the forced www host must be served");
+const wwwUnforced = await fetch(`http://127.0.0.1:${proxyPort}${PROXY_PREFIX}/${encodeOrigin(nearLocalOrigin)}/apex`);
+assert.equal(wwwUnforced.status, 403, "an unforced token must still be refused");
 await new Promise((resolve) => proxy.close(resolve));
 await new Promise((resolve) => target.close(resolve));
 
@@ -212,6 +237,109 @@ assert.match(await sneaky.text(), /not allowed/i, "the refusal must name the fen
 await close(redirectProxy);
 await close(appA);
 await close(appB);
+
+// ---------------------------------------------------------------------------
+// Transport: compressed upstream, 307 body replay, cookie jar + document.cookie bridge.
+// ---------------------------------------------------------------------------
+const seen = [];
+const xport = http.createServer(async (req, res) => {
+  const chunks = [];
+  for await (const c of req) chunks.push(c);
+  const body = Buffer.concat(chunks).toString();
+  seen.push({ url: req.url, method: req.method, body, cookie: req.headers.cookie || "" });
+  if (req.url === "/gz") {
+    res.writeHead(200, { "content-type": "text/plain", "content-encoding": "gzip" });
+    return res.end(zlib.gzipSync("plain gz body"));
+  }
+  if (req.url === "/r307") { res.writeHead(307, { location: "/echo" }); return res.end(); }
+  if (req.url === "/r303") { res.writeHead(303, { location: "/echo" }); return res.end(); }
+  if (req.url === "/set") {
+    res.writeHead(200, { "content-type": "text/plain", "set-cookie": ["a=1; Path=/", "h=2; HttpOnly", "gone=x; Path=/"] });
+    return res.end("set");
+  }
+  if (req.url === "/clear") {
+    res.writeHead(200, { "content-type": "text/plain", "set-cookie": ["a=; Max-Age=0", "gone=; Expires=Thu, 01 Jan 1970 00:00:00 GMT"] });
+    return res.end("clear");
+  }
+  res.writeHead(200, { "content-type": "text/plain" });
+  res.end("echo");
+});
+const xportPort = await listen(xport);
+const xproxy = http.createServer((req, res) => { handleProxy(req, res, "").catch(() => { try { res.destroy(); } catch {} }); });
+const xproxyPort = await listen(xproxy);
+const xtoken = encodeOrigin(`http://127.0.0.1:${xportPort}`);
+const xbase = `http://127.0.0.1:${xproxyPort}${PROXY_PREFIX}/${xtoken}`;
+
+const gz = await fetch(`${xbase}/gz`);
+assert.equal(await gz.text(), "plain gz body", "gzip upstream must reach the browser as plain bytes");
+assert.equal(gz.headers.get("content-encoding"), null);
+
+await (await fetch(`${xbase}/r307`, { method: "POST", body: "payload" })).text();
+const echoed = seen.filter((r) => r.url === "/echo").pop();
+assert.equal(echoed.method, "POST", "307 must keep the method");
+assert.equal(echoed.body, "payload", "307 must replay the body");
+await (await fetch(`${xbase}/r303`, { method: "POST", body: "payload" })).text();
+const echoed303 = seen.filter((r) => r.url === "/echo").pop();
+assert.equal(echoed303.method, "GET", "303 must become GET");
+assert.equal(echoed303.body, "", "303 must drop the body");
+
+const setRes = await fetch(`${xbase}/set`);
+const bridged = setRes.headers.getSetCookie();
+assert.ok(bridged.some((c) => c.startsWith("__spw_a=1; Path=") && c.includes(`/${xtoken}/`)), "non-HttpOnly cookie must be bridged");
+assert.ok(!bridged.some((c) => c.includes("h=2")), "HttpOnly cookie must not reach the browser");
+await (await fetch(`${xbase}/probe`, { headers: { cookie: "__spw_b=3; dsh_session=SECRET" } })).text();
+const probe = seen.filter((r) => r.url === "/probe").pop();
+assert.match(probe.cookie, /a=1/, "jar cookie must be sent");
+assert.match(probe.cookie, /b=3/, "__spw_ cookie must be sent with prefix stripped");
+assert.ok(!/dsh_session|SECRET|__spw_/.test(probe.cookie), "DSH cookies and the prefix must never reach the target");
+await (await fetch(`${xbase}/clear`)).text();
+await (await fetch(`${xbase}/probe`)).text();
+const probe2 = seen.filter((r) => r.url === "/probe").pop();
+assert.ok(!/(^|; )a=|gone=/.test(probe2.cookie), "Max-Age=0 / past Expires must clear the jar cookie");
+await close(xproxy);
+await close(xport);
+
+
+// Unquoted attributes, kept <base href>, @import strings, JS module specifiers.
+const loose = rewriteHtml('<base href=/app/><script src=/s.js></script><img srcset=/a.png><link href=/c.css>', origin + "/", token, "");
+assert.ok(loose.includes(`src="${prefix}/s.js"`) && loose.includes(`<base href="${prefix}/app/">`), loose);
+assert.ok(loose.includes(`srcset="${prefix}/a.png"`) && loose.includes(`href="${prefix}/c.css"`), loose);
+const cssImport = rewriteHtml('<style>@import "/a.css"; @import url(/b.css);</style>', origin + "/", token, "");
+assert.ok(cssImport.includes(`@import "${prefix}/a.css"`) && cssImport.includes(`url(${prefix}/b.css)`), cssImport);
+const js = rewriteJs('import a from "/x.js";import "/y";export * from "/z";import("/d.js");import("//cdn/q");import("/api/sidepanel-web/p/t/k");new URL("/w.js", import.meta.url);import b from "./r.js"', token);
+for (const spec of ["/x.js", "/y", "/z", "/d.js", "/w.js"]) assert.ok(js.includes(`"${prefix}${spec}"`), js);
+assert.ok(js.includes('"//cdn/q"') && js.includes('"/api/sidepanel-web/p/t/k"') && js.includes('"./r.js"'), js);
+assert.equal(rewriteJs('Array.from("/x")', "T"), 'Array.from("/x")');
+assert.equal(rewriteJs('x.from(\'/y\')', "T"), 'x.from(\'/y\')');
+assert.equal(rewriteJs('import x from "/a.js";export * from "/a.js";import("/a.js")', token), `import x from "${prefix}/a.js";export * from "${prefix}/a.js";import("${prefix}/a.js")`);
+assert.equal(proxifyUrl("http://host/api/x", origin, prefix, `http://host${prefix}/`), `${prefix}/api/x`);
+assert.equal(proxifyUrl(`http://host${prefix}/x`, origin, prefix, `http://host${prefix}/`), `http://host${prefix}/x`);
+// Bot-challenge detector: challenge signals match, a plain page does not.
+assert.equal(isBotChallenge(202, { "x-amzn-waf-action": "challenge" }, ""), true);
+assert.equal(isBotChallenge(403, { "cf-mitigated": "challenge" }, ""), true);
+assert.equal(isBotChallenge(403, { server: "cloudflare" }, "<title>Just a moment...</title>"), true);
+assert.equal(isBotChallenge(200, {}, '<script src="https://x.awswaf.com/y/challenge.js"></script>'), true);
+assert.equal(isBotChallenge(200, { server: "cloudflare" }, "<html><body>hello</body></html>"), false);
+assert.equal(isBotChallenge(200, {}, '<script src="https://cdn.example/app.js"></script>'), false);
+
+// Through the proxy: a challenge page becomes the notice, a normal page keeps the overlay.
+const wafTarget = http.createServer((req, res) => {
+  const waf = req.url === "/waf";
+  res.writeHead(waf ? 202 : 200, { "content-type": "text/html; charset=utf-8", ...(waf ? { "x-amzn-waf-action": "challenge" } : {}) });
+  res.end(waf ? "<html><script src=x></script>BLOCK</html>" : "<html><body>normal</body></html>");
+});
+await new Promise((resolve) => wafTarget.listen(0, resolve));
+const wafProxy = http.createServer((req, res) => { handleProxy(req, res, "<!--OVERLAY-->").catch(() => { try { res.destroy(); } catch {} }); });
+await new Promise((resolve) => wafProxy.listen(0, resolve));
+const wafBase = `http://127.0.0.1:${wafProxy.address().port}${PROXY_PREFIX}/${encodeOrigin(`http://127.0.0.1:${wafTarget.address().port}`)}`;
+const wafBody = await (await fetch(`${wafBase}/waf?nonce=abc123`)).text();
+assert.ok(wafBody.includes("<button") && wafBody.includes("Open in Remote view") && wafBody.includes('kind:"remote"') && wafBody.includes('nonce:"abc123"'), wafBody);
+const evilBody = await (await fetch(`${wafBase}/waf?nonce=${encodeURIComponent("</script><b>x")}`)).text();
+assert.ok(!evilBody.includes("</script><b>") && evilBody.includes("\\u003c/script>"), evilBody);
+assert.ok( !wafBody.includes("BLOCK") && !wafBody.includes("OVERLAY"), wafBody);
+assert.ok((await (await fetch(`${wafBase}/ok`)).text()).includes("OVERLAY"), "a normal page keeps the overlay");
+await new Promise((resolve) => wafProxy.close(resolve));
+await new Promise((resolve) => wafTarget.close(resolve));
 
 console.log("proxy-smoke: ok");
 console.log("  importmap:", importmap.imports["rc-ui"]);
