@@ -12,6 +12,8 @@
 - [ ] `npm test`
 - [ ] Checked in the preview harness (`node test/preview/server.mjs`)
 - [ ] Checked in DSH Web (host restart + GUI refresh), if host routes changed
+- [ ] Dependency set unchanged, or the dependency proposal issue is linked
+- [ ] User-visible change: `README.md` and `README.ca.md` updated (or said why not)
 
 ## Screenshots / privacy
 
