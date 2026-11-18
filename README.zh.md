@@ -383,7 +383,7 @@ lib/
   client.js       标签页、载体、overlay 桥、输入框
 assets/           icon.svg、icon.png、icon-180.png、banner.png、screenshots/
 test/             smoke 测试和 preview/mockup harness
-docs/             DSH Web 集成研究（加泰罗尼亚语）
+docs/             DSH Web 集成研究与协作模式（加泰罗尼亚语）
 ```
 
 ```bash
@@ -393,7 +393,7 @@ npm run test:ui        # Esc、原生命令插入、合成图片附件（需要 
 npm run test:composite # 真实 Chromium 合成渲染，带标注钉（需要 Chromium）
 npm run smoke          # 宿主 CDP smoke 测试（需要 Chromium）
 npm run mockups        # 重新生成 assets/banner.png 和 assets/screenshots
-dsh plugin --profile web add link:$PWD
+dsh plugin --profile web add link:"$PWD"
 ```
 
 版本说明在 [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md)。
@@ -419,7 +419,7 @@ node test/preview/server.mjs
 
 ## 参与贡献
 
-欢迎贡献：bug 报告、载体修复、文档和 mockup 改进。先看 [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md)，跑 `npm run check` 和 `npm test`，添加图片前读一下截图隐私规则。项目遵循 [行为准则](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md)。安全问题走 [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md)，不要开公开 issue。
+欢迎贡献：bug 报告、载体修复、文档和 mockup 改进。先看 [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md)，跑 `npm run check` 和 `npm test`，添加图片前读一下截图隐私规则。`main` 分支受保护：改动必须走 pull request，需要一次评审和通过的 CI。为什么这样定、借鉴了哪些项目、冲突怎么处理，见 [docs/collaboracio.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/collaboracio.md)（加泰罗尼亚语）。项目遵循 [行为准则](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md)。安全问题走 [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md)，不要开公开 issue。
 
 ## 致谢
 

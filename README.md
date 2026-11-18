@@ -380,7 +380,7 @@ lib/
   client.js       sidebar tab, carriers, overlay bridge, composer
 assets/           icon.svg, icon.png, icon-180.png, banner.png, screenshots/
 test/             smoke tests and the preview/mockup harness
-docs/             DSH Web integration research (Catalan)
+docs/             DSH Web integration research and the collaboration model (Catalan)
 ```
 
 ```bash
@@ -390,7 +390,7 @@ npm run test:ui        # Esc, native Insert and composite attachments (needs Chr
 npm run test:composite # real Chromium composite render with pins (needs Chromium)
 npm run smoke          # host CDP smoke test (needs Chromium)
 npm run mockups        # re-render assets/banner.png and assets/screenshots
-dsh plugin --profile web add link:$PWD
+dsh plugin --profile web add link:"$PWD"
 ```
 
 Release notes live in [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md).
@@ -416,7 +416,7 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 
 ## Contributing
 
-Contributions are welcome: bug reports, carrier fixes, documentation and mockup improvements. Start with [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md), run `npm run check` and `npm test`, and read the screenshot privacy rule before adding images. This project follows the [Code of Conduct](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md). Security reports go through [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md), not public issues.
+Contributions are welcome: bug reports, carrier fixes, documentation and mockup improvements. Start with [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md), run `npm run check` and `npm test`, and read the screenshot privacy rule before adding images. `main` is protected: changes land through a pull request with one review and green CI. Why the rules look like that, which other projects they borrow from and how conflicts are settled is in [docs/collaboracio.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/collaboracio.md) (Catalan). This project follows the [Code of Conduct](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md). Security reports go through [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md), not public issues.
 
 ## Credits
 

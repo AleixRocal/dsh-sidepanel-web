@@ -383,7 +383,7 @@ lib/
   client.js       pestanya, portadors, pont de l'overlay, composer
 assets/           icon.svg, icon.png, icon-180.png, banner.png, screenshots/
 test/             smoke tests i harness de preview/mockups
-docs/             recerca d'integració amb DSH Web (català)
+docs/             recerca d'integració amb DSH Web i model de col·laboració (català)
 ```
 
 ```bash
@@ -393,7 +393,7 @@ npm run test:ui        # Esc, inserció nativa i adjunts compostos (necessita Ch
 npm run test:composite # render compost real amb pins (necessita Chromium)
 npm run smoke          # smoke test del host amb CDP (necessita Chromium)
 npm run mockups        # regenera assets/banner.png i assets/screenshots
-dsh plugin --profile web add link:$PWD
+dsh plugin --profile web add link:"$PWD"
 ```
 
 Les notes de versió viuen a [`CHANGELOG.md`](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CHANGELOG.md).
@@ -419,7 +419,7 @@ Listat a [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-
 
 ## Contribuir
 
-Les contribucions són benvingudes: errors, arreglos de portadors, documentació i millores dels mockups. Comença per [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md), executa `npm run check` i `npm test`, i llegeix la regla de privacitat de les captures abans d'afegir imatges. Aquest projecte segueix el [Codi de conducta](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md). Els reports de seguretat van per [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md), no per issues públics.
+Les contribucions són benvingudes: errors, correccions de portadors, documentació i millores dels mockups. Comença per [CONTRIBUTING.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CONTRIBUTING.md), executa `npm run check` i `npm test`, i llegeix la regla de privacitat de les captures abans d'afegir imatges. La branca `main` està protegida: els canvis entren per pull request amb una revisió i el CI verd. Per què les regles són així, d'on vénen i com es resolen els conflictes ho explica [docs/collaboracio.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/docs/collaboracio.md). Aquest projecte segueix el [Codi de conducta](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/CODE_OF_CONDUCT.md). Els informes de seguretat van per [SECURITY.md](https://github.com/AleixRocal/dsh-sidepanel-web/blob/main/SECURITY.md), no per issues públics.
 
 ## Crèdits
 
