@@ -4,7 +4,7 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.6] — 2026-11-25
 
 ### Added
 
@@ -224,6 +224,7 @@ All notable changes to this project. The format follows
   proxy for local/dev pages.
 - English and Spanish UI.
 
+[0.4.6]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.4.5...v0.4.6
 [0.4.1]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/AleixRocal/dsh-sidepanel-web/compare/v0.3.0...v0.3.1
