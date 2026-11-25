@@ -31,6 +31,14 @@ let devicePreset = "responsive";
 let lastNavigate = "";
 let lastViewport = null;
 let lastComposite = null;
+let lastSettings = {};
+
+// 面板的「浏览器设置」在本机上不可能真的探测出一台 Chrome，所以这里给固定候选。
+const SETTINGS_CANDIDATES = [
+  { path: "/usr/bin/google-chrome", source: "known-path", exists: true },
+  { path: "/usr/bin/chromium", source: "known-path", exists: true },
+  { path: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", source: "known-path", exists: false }
+];
 
 const DEVICE = {
   responsive: { preset: "responsive", label: "Adaptive (fits the panel)", width: 0, height: 0, dpr: 1, mobile: false, touch: false },
@@ -111,7 +119,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (p === "/api/sidepanel-web/status") {
-    const config = { pollMs: 1200, quality: 82, headless: true };
+    const config = { pollMs: 1200, quality: 82, headless: true, ...lastSettings };
     const base = {
       wsUrl: "ws://127.0.0.1:9222/devtools/browser/preview",
       info: { endpoint: "ws://127.0.0.1:9222/devtools/browser/preview", launched: null, lastError: "" },
@@ -229,6 +237,51 @@ ${overlayScript(nonce, "http://shop.local")}</body></html>`;
   if (p === "/api/sidepanel-web/start" && req.method === "POST") {
     return json(res, 200, { ok: true, ...PAGE, lastError: "" });
   }
+
+  // 面板里的「浏览器设置」：GET 回候选，POST 记住 patch，面板重连后 status 会带上它。
+  if (p === "/api/sidepanel-web/settings") {
+    if (req.method === "POST") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      let patch = null;
+      try { patch = JSON.parse(body || "{}"); } catch { patch = null; }
+      if (patch && patch.reset === true) lastSettings = {};
+      else if (patch && patch.patch) lastSettings = { ...lastSettings, ...patch.patch };
+      return json(res, 200, { ok: true, config: { pollMs: 1200, quality: 82, ...lastSettings }, overrides: lastSettings });
+    }
+    return json(res, 200, {
+      ok: true,
+      config: { pollMs: 1200, quality: 82, headless: true, ...lastSettings },
+      overrides: lastSettings,
+      candidates: SETTINGS_CANDIDATES,
+      settingsFile: "/home/preview/.local/state/dsh-sidepanel-web/settings.json"
+    });
+  }
+
+  // 设置页的文件夹浏览器：假目录树，够跑通「上翻 / 选可执行文件」两条路径。
+  if (p === "/api/sidepanel-web/browse") {
+    const url = new URL(req.url, "http://x");
+    const path = url.searchParams.get("path") || "/usr/bin";
+    const onlyExe = url.searchParams.get("executables") === "1";
+    const tree = {
+      "/usr/bin": [
+        { name: "google-chrome", type: "file", executable: true },
+        { name: "chromium", type: "file", executable: true },
+        { name: "ls", type: "file", executable: true },
+        { name: "README", type: "file", executable: false }
+      ],
+      "/opt": [{ name: "google", type: "dir", executable: false }],
+      "/opt/google": [{ name: "chrome", type: "dir", executable: false }],
+      "/opt/google/chrome": [{ name: "chrome", type: "file", executable: true }]
+    };
+    const entries = (tree[path] || [])
+      .filter((e) => e.type === "dir" || !onlyExe || e.executable)
+      .map((e) => ({ ...e, path: path.replace(/\/$/, "") + "/" + e.name }));
+    const parent = path === "/" ? null : path.replace(/\/[^/]+$/, "") || "/";
+    return json(res, 200, { ok: true, path, parent, entries, truncated: false });
+  }
+
+  if (p === "/__settings") return json(res, 200, lastSettings);
 
   if (p === "/harness.html") return sendFile(res, join(HERE, "harness.html"), "text/html; charset=utf-8");
   if (p === "/shell.html") return sendFile(res, join(HERE, "shell.html"), "text/html; charset=utf-8");

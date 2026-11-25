@@ -103,7 +103,13 @@ async function main() {
     // The same override through the real UI: open ⋯ and click the menu item.
     { state: "force-native-menu", extra: `&url=${encodeURIComponent("https://shop.example.com/checkout")}` },
     // Native Insert path: pick, note, add to list, Insert -> one composite.
-    { state: "insert-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` }
+    { state: "insert-native", extra: `&url=${encodeURIComponent("http://shop.local/checkout")}` },
+    // Error state -> the panel's own Browser settings dialog (the only way to
+    // set chromePath in a packaged DSH desktop build).
+    { state: "error", extra: "&open-settings=1" },
+    // The plugin's own configuration page (Plugins → dsh-sidepanel-web):
+    // detect, browse the filesystem, pick the executable, save.
+    { state: "config", extra: "&config=1" }
   ];
   const results = {};
   for (const { state, extra } of states) {
@@ -123,10 +129,12 @@ async function main() {
     assert.ok(ready, `${state}: harness never became ready`);
     const out = await client.send(
       "Runtime.evaluate",
-      { expression: "JSON.stringify(window.__esc || window.__insert || window.__escNative || window.__forceNative || window.__insertNative || null)", returnByValue: true },
+      { expression: "JSON.stringify(window.__esc || window.__insert || window.__escNative || window.__forceNative || window.__insertNative || window.__settings || window.__config || null)", returnByValue: true },
       sid
     );
     results[state] = JSON.parse(out.result.value);
+    if (state === "error") results.errorStateSettings = results[state];
+    if (state === "config") results.configPage = results[state];
   }
 
   assert.ok(results.esc, "esc: no result");
@@ -204,6 +212,31 @@ async function main() {
   assert.match(String(last.composite.url || ""), /shop\.local/, "insert-native: the real page URL was lost");
   assert.ok(!last.composite.proxyPath.includes("undefined"), "insert-native: the proxy path is malformed");
 
+  // Error state -> Browser settings: the panel is the only place to set
+  // chromePath in a packaged DSH desktop build, so the whole round trip has to
+  // work from the real UI: open, pick a detected browser, save, reach the host.
+  assert.ok(results.errorStateSettings || results.settings, "settings: no result");
+  const cfg = results.errorStateSettings || results.settings;
+  assert.equal(cfg.opened, true, "settings: the connection error has no settings entry point");
+  assert.equal(cfg.modal, true, `settings: the dialog did not open (${cfg.error || ""})`);
+  assert.ok(cfg.chips >= 1, "settings: the detected browsers were not listed");
+  assert.equal(cfg.path, "/usr/bin/google-chrome", `settings: the candidate did not fill the field (${cfg.path})`);
+  assert.ok(cfg.saved && cfg.saved.chromePath === "/usr/bin/google-chrome", `settings: the patch never reached the host (${JSON.stringify(cfg.saved)})`);
+  assert.equal(cfg.closed, true, "settings: the dialog stayed open after saving");
+
+  // The plugin's configuration page must detect, let the user browse to a
+  // binary, and persist the choice - the whole point of the page.
+  assert.ok(results.configPage, "config page: no result");
+  const cfgPage = results.configPage;
+  assert.equal(cfgPage.error, null, `config page: script failed (${cfgPage.error})`);
+  assert.ok(cfgPage.chips >= 1, "config page: Detect listed no browser");
+  assert.equal(cfgPage.detected, "/usr/bin/google-chrome", `config page: the detected chip did not fill the field (${cfgPage.detected})`);
+  assert.ok(cfgPage.browsed.includes("google-chrome"), `config page: the file browser listed nothing usable (${cfgPage.browsed})`);
+  assert.equal(cfgPage.picked, "/usr/bin/google-chrome", `config page: picking an executable did not fill the field (${cfgPage.picked})`);
+  assert.ok(cfgPage.saved && cfgPage.saved.chromePath === "/usr/bin/google-chrome", `config page: the choice never reached the host (${JSON.stringify(cfgPage.saved)})`);
+  assert.equal(cfgPage.summary, true, "config page: saving showed no confirmation");
+  console.log(`  plugin config page: ${cfgPage.chips} detected, browsed ${cfgPage.browsed.length}, saved ${cfgPage.saved.chromePath}`);
+  console.log(`  browser settings dialog: ${cfg.chips} detected, saved ${cfg.saved.chromePath}`);
   console.log("behavior: ok");
   console.log("  Esc leaves annotate mode (CDP):", results.esc.before, "->", results.esc.after);
   console.log("  Esc leaves annotate mode (native iframe):", results["esc-native"].before, "->", results["esc-native"].after);
