@@ -4,6 +4,17 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Address-bar history.** Both carriers remember the pages this tab opened and
+  offer them as native suggestions while you type: newest first, deduped, capped
+  at 30. The remote carrier feeds the list from the URL the `/status` poll
+  reports, so redirects and in-page links land there too; the native carrier
+  reuses its own back/forward stack, so the two cannot disagree. A tab opened at
+  a URL seeds the list with it before the first poll.
+
 ## [0.4.6] — 2026-11-25
 
 ### Added

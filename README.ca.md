@@ -126,6 +126,7 @@ El panell pot renderitzar una pàgina de dues maneres. Normalment no cal pensar-
 
 - **Una pestanya de navegador real** (`kind: "browser"`), de manera que l'opció «obre l'enllaç a la barra lateral» del xat obre aquest navegador; `params.url` es navega en arribar.
 - **Esquema automàtic a la barra d'adreces.** `example.com` es converteix en `https://example.com/`; `shop.local:5173`, `127.0.0.1:5173` o `192.168.1.20:8080` fan servir `http://`. Els esquemes que no són web (`mailto:`, `file:`, `javascript:`, `data:`) es rebutgen.
+- **Historial a la barra d'adreces.** Les pàgines que aquesta pestanya ja ha obert tornen com a suggeriments natius mentre escrius (les més recents primer, sense duplicats, com a molt 30). El portador remot omple la llista amb la URL que reporta el sondeig `/status`, redireccions i enllaços interns inclosos; el natiu reutilitza la seva pròpia pila d'endavant/enrere, així que els dos no es poden contradir.
 - **Porta el teu navegador.** Apunta `cdpUrl`/`wsUrl` a qualsevol Chrome amb `--remote-debugging-port`, deixa que el plugin en descobreixi un o deixa que n'arrenqui un amb perfil persistent.
 - **Emulació de dispositiu.** Responsive (s'ajusta al panell), escriptori 1280×800, portàtil 1440×900, tauleta 768×1024 (UA d'iPad), mòbil 390×844 (UA d'iPhone) i Android 412×915, amb touch i `devicePixelRatio` coherent.
 - **Interfície en anglès i castellà** via `ctx.locale`; altres idiomes cauen a l'anglès.
