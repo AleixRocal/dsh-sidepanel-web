@@ -172,7 +172,9 @@ dsh plugin --profile web add link:/absolute/path/to/dsh-sidepanel-web
 3. 点击 **标注**，悬停页面，点击一个元素，写备注，选择 **插入**。
 
 > [!NOTE]
-> 如果在常见 CDP 端口上没找到浏览器，插件会启动一个带持久配置的专用无头 Chromium。只有自动检测不到时才需要设置 `chromePath`。
+> 如果在常见 CDP 端口上没找到浏览器，插件会启动一个带持久配置的专用无头 Chromium。自动检测找不到时（打包好的 DSH 桌面版里很常见），点面板上的齿轮图标（**浏览器设置**）填可执行文件路径；同一个对话框也能填 CDP `ws://` endpoint、关掉自动启动。同样的字段也在插件自己的配置页里（侧栏 **插件** → **dsh-sidepanel-web**）：它会检测这台机器上的浏览器，一个都没有时用文件浏览器挑一个可执行文件。
+>
+> 选择保存在 `~/.local/state/dsh-sidepanel-web/settings.json`，重启后仍然有效，不用改 profile patch。
 
 ### 使用你自己的浏览器
 
@@ -221,7 +223,7 @@ Chrome 136+ 不允许默认配置暴露 `/json/version`，所以要单独给一�
 
 | 键 | 默认值 | 含义 |
 | --- | --- | --- |
-| `chromePath` | 自动检测 | 基于 Chromium 的浏览器的绝对路径。 |
+| `chromePath` | 自动检测 | 基于 Chromium 的浏览器的绝对路径。也可以在面板的齿轮里设置；`DSH_SIDEPANEL_CHROME`、`DSH_CHROME_PATH`、`CHROME_PATH`、`PUPPETEER_EXECUTABLE_PATH` 同样生效。 |
 | `headless` | `true` | 不显示窗口启动宿主机浏览器。 |
 | `autoLaunch` | `true` | 没有可用 CDP endpoint 时启动浏览器。 |
 | `wsUrl` | 空 | 显式 CDP endpoint（`ws://127.0.0.1:port/devtools/browser/…`）。 |
