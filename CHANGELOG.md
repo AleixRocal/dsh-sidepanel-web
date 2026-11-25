@@ -4,6 +4,38 @@ All notable changes to this project. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **A configuration page for the plugin.** It registers into the Plugins page
+  (`plugins.row.config` and `plugins.bundle.config`), detects the
+  Chromium-based browsers on this machine, and — when none is found or the
+  wrong one is — opens a read-only file browser (new
+  `GET /api/sidepanel-web/browse`, session-gated, metadata only, executables
+  filter, hidden entries skipped, list capped) to pick the executable. The
+  page saves through the same override store the panel dialog uses, so both
+  surfaces agree.
+- **Browser settings inside the panel.** A gear button (and the connection
+  error state) opens a dialog for the Chrome executable path, a CDP `ws://`
+  endpoint, auto-launch and headless mode. It lists the Chromium-based
+  browsers found on the machine and fills the field on click. The choice is
+  written to `~/.local/state/dsh-sidepanel-web/settings.json` and layered over
+  the plugin config, so a wrong path is fixable from the panel itself — the
+  only practical route in packaged DSH desktop builds. Saving reconnects with
+  the new settings immediately.
+
+### Changed
+
+- **Chrome detection covers more installs.** Beyond the macOS app bundles and
+  `/usr/bin/google-chrome`, the launcher now checks Snap, Flatpak, `/opt`,
+  Edge, Brave, Vivaldi and the canary/beta channels, the `PATH` entries for
+  those binaries, and the `DSH_SIDEPANEL_CHROME`, `DSH_CHROME_PATH`,
+  `CHROME_PATH`, `CHROME_BIN`, `GOOGLE_CHROME_SHIM` and
+  `PUPPETEER_EXECUTABLE_PATH` variables. A configured path that does not exist
+  is reported as such instead of silently falling back to another browser, and
+  the "not found" error now lists where it looked.
+
 ## [0.4.5] — 2026-11-16
 
 ### Changed

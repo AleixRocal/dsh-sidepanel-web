@@ -172,7 +172,9 @@ També hi ha una còpia amb scope (`@aleixrocal/dsh-sidepanel-web`) a [GitHub Pa
 3. Fes clic a **Anotar**, passa el ratolí, clica un element, escriu la nota i tria **Insereix**.
 
 > [!NOTE]
-> Si no troba cap navegador als ports CDP habituals, el plugin arrenca un Chromium headless dedicat amb un perfil persistent. Només cal `chromePath` si la detecció automàtica falla.
+> Si no troba cap navegador als ports CDP habituals, el plugin arrenca un Chromium headless dedicat amb un perfil persistent. Quan la detecció automàtica falla — habitual a les versions empaquetades de DSH d'escriptori — obre la icona d'engranatge del panell (**Ajustes del navegador**) i indica-hi l'executable; el mateix diàleg també accepta un endpoint CDP `ws://` i permet desactivar l'arrencada automàtica. Els mateixos camps són a la pàgina de configuració del plugin (barra lateral **Plugins** → **dsh-sidepanel-web**), que detecta els navegadors d'aquesta màquina i, si no n'hi ha cap, obre un explorador de fitxers per triar l'executable.
+>
+> L'elecció es desa a `~/.local/state/dsh-sidepanel-web/settings.json` i sobreviu als reinicis, sense tocar el patch del perfil.
 
 ### Fes servir el teu navegador
 
@@ -221,7 +223,7 @@ Les opcions es posen al patch del perfil, sota la fila del plugin:
 
 | Clau | Per defecte | Significat |
 | --- | --- | --- |
-| `chromePath` | auto-detect | Ruta absoluta a un navegador basat en Chromium. |
+| `chromePath` | auto-detect | Ruta absoluta a un navegador basat en Chromium. També es pot fixar des de l'engranatge del panell; `DSH_SIDEPANEL_CHROME`, `DSH_CHROME_PATH`, `CHROME_PATH` i `PUPPETEER_EXECUTABLE_PATH` també es tenen en compte. |
 | `headless` | `true` | Arrenca el navegador del host sense finestra. |
 | `autoLaunch` | `true` | Arrenca un navegador quan no hi ha cap endpoint CDP. |
 | `wsUrl` | buit | Endpoint CDP explícit (`ws://127.0.0.1:port/devtools/browser/…`). |

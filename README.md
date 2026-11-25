@@ -169,7 +169,9 @@ A scoped copy (`@aleixrocal/dsh-sidepanel-web`) is also published to [GitHub Pac
 3. Click **Annotate**, hover the page, click an element, write the note and choose **Insert**.
 
 > [!NOTE]
-> If no browser is found on the usual CDP ports, the plugin launches a dedicated headless Chromium with a persistent profile. Set `chromePath` only when auto-detection misses your binary.
+> If no browser is found on the usual CDP ports, the plugin launches a dedicated headless Chromium with a persistent profile. When auto-detection misses your binary — common in packaged DSH desktop builds — open the gear icon in the panel (**Browser settings**) and point it at the executable; the same dialog also takes a CDP `ws://` endpoint and toggles auto-launch. The same fields live on the plugin's own configuration page (sidebar **Plugins** → **dsh-sidepanel-web**), which detects the browsers on this machine and, when none is there, opens a file browser to pick the executable.
+>
+> The choice is saved to `~/.local/state/dsh-sidepanel-web/settings.json` and survives restarts, so no profile patch editing is needed.
 
 ### Use your own browser
 
@@ -218,7 +220,7 @@ Set options in the profile patch, under the plugin's row:
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `chromePath` | auto-detect | Absolute path to a Chromium-based browser. |
+| `chromePath` | auto-detect | Absolute path to a Chromium-based browser. Also settable from the panel's gear icon; `DSH_SIDEPANEL_CHROME`, `DSH_CHROME_PATH`, `CHROME_PATH` and `PUPPETEER_EXECUTABLE_PATH` are honoured too. |
 | `headless` | `true` | Launch the host browser without a window. |
 | `autoLaunch` | `true` | Start a browser when no CDP endpoint is available. |
 | `wsUrl` | empty | Explicit CDP endpoint (`ws://127.0.0.1:port/devtools/browser/…`). |
