@@ -123,6 +123,7 @@ The panel can render a page in two ways. You normally do not need to think about
 
 - **A real browser tab** (`kind: "browser"`), so the chat's “open link in sidebar” preference lands here; `params.url` is navigated on arrival.
 - **Automatic address-bar scheme.** `example.com` becomes `https://example.com/`; `shop.local:5173`, `127.0.0.1:5173` or `192.168.1.20:8080` use `http://`. Non-web schemes (`mailto:`, `file:`, `javascript:`, `data:`) are refused.
+- **Address-bar history.** The pages this tab already opened come back as native suggestions while you type (newest first, deduped, capped at 30). The remote carrier feeds the list from the URL the `/status` poll reports, redirects and in-page links included; the native carrier reuses its own back/forward stack, so the two cannot disagree.
 - **Bring your own browser.** Point `cdpUrl`/`wsUrl` at any Chrome started with `--remote-debugging-port`, let the plugin discover one, or let it launch its own with a persistent profile.
 - **Device emulation.** Responsive (fits the panel), desktop 1280×800, laptop 1440×900, tablet 768×1024 (iPad UA), phone 390×844 (iPhone UA) and Android 412×915, with touch and matching `devicePixelRatio`.
 - **English and Spanish UI** through `ctx.locale`; other locales fall back to English.
