@@ -92,6 +92,8 @@
   let tabDef = null;
   let bodyComp = null;
   let writerComp = null;
+  let configComp = null;
+  let bundleConfigComp = null;
   // The client registers { en, es } with ctx.locale; this harness used to
   // return the raw key, which made every preview render in the source
   // language (Chinese). Resolve through the registered dictionary instead, so
@@ -115,6 +117,8 @@
       register(desc, comp) {
         if (desc && desc.name === "conversation.input.dock") writerComp = comp;
         if (desc && desc.name === "sidebar.right.pane.tab") bodyComp = comp;
+        if (desc && desc.name === "plugins.row.config") configComp = comp;
+        if (desc && desc.name === "plugins.bundle.config") bundleConfigComp = comp;
         return desc;
       }
     },
@@ -158,9 +162,19 @@
     }
   });
 
-  ReactDOM.createRoot(mount).render(
-    React.createElement(bodyComp, { visible: true, useTabInfo })
-  );
+  // ?config=1: the plugin's own configuration page (Plugins → dsh-sidepanel-web),
+  // registered through plugins.row.config / plugins.bundle.config.
+  const wantConfig = q.get("config") === "1";
+  if (wantConfig) {
+    if (!configComp) throw new Error("没有注册 plugins.row.config 页");
+    ReactDOM.createRoot(mount).render(
+      React.createElement(configComp, { view: "page" })
+    );
+  } else {
+    ReactDOM.createRoot(mount).render(
+      React.createElement(bodyComp, { visible: true, useTabInfo })
+    );
+  }
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const waitFor = async (sel, timeout = 8000) => {
@@ -411,6 +425,93 @@
     };
   }
 
+  // 连接失败态下的「浏览器设置」：桌面版 DSH 里没有别的入口改 chromePath，
+  // 所以这条路径必须能在真实 UI 上跑通：开面板 → 选候选 → 保存。
+  if (q.get("open-settings") === "1") {
+    const result = { opened: false, modal: false, chips: 0, saved: null, closed: null, error: null };
+    try {
+      // El estado de conexión pasa por "conectando…" antes de fallar, así que hay
+      // que esperar al botón, no solo a `.ab-empty`.
+      let entry = null;
+      for (let i = 0; i < 80 && !entry; i += 1) {
+        const buttons = [...document.querySelectorAll(".ab-empty .ab-btn")];
+        entry = buttons.find((b) => /settings|设置|ajustes/i.test(b.textContent)) || null;
+        if (!entry) await sleep(120);
+      }
+      result.opened = !!entry;
+      if (entry) entry.click();
+      const card = await waitFor(".ab-modal-card");
+      result.modal = !!card;
+      if (card) {
+        const chips = [...card.querySelectorAll(".ab-chip")];
+        result.chips = chips.length;
+        if (chips[0]) { chips[0].click(); await sleep(120); }
+        const input = card.querySelector(".ab-input");
+        result.path = input ? input.value : "";
+        const save = [...card.querySelectorAll(".ab-modal-acts .ab-btn")].find((b) => /save|保存|guardar/i.test(b.textContent));
+        if (save) save.click();
+        for (let i = 0; i < 40 && result.saved === null; i += 1) {
+          await sleep(150);
+          try {
+            const got = await (await fetch("/__settings")).json();
+            if (got && got.chromePath) result.saved = got;
+          } catch (e) { result.error = String(e); }
+        }
+        result.closed = !document.querySelector(".ab-modal-card");
+      }
+    } catch (e) {
+      result.error = String(e);
+    }
+    window.__settings = result;
+  }
+
+  if (wantConfig) {
+    // 检测 → 选中候选 → 浏览目录 → 选可执行文件 → 保存。四步都要真的落到宿主上。
+    const result = { chips: 0, detected: null, browsed: [], picked: null, saved: null, view: wantConfig, error: null, summary: null };
+    try {
+      const detect = [...document.querySelectorAll(".cf-btn")].find((b) => /Detect|检测|Detectar/i.test(b.textContent));
+      if (detect) detect.click();
+      for (let i = 0; i < 60 && !document.querySelector(".cf-chip"); i += 1) await sleep(100);
+      const chips = [...document.querySelectorAll(".cf-chip")];
+      result.chips = chips.length;
+      if (chips[0]) {
+        chips[0].click();
+        await sleep(80);
+        result.detected = document.querySelector(".cf-input").value;
+      }
+      const browseBtn = [...document.querySelectorAll(".cf-btn")].find((b) => /Browse|浏览|Explorar/i.test(b.textContent));
+      if (browseBtn) browseBtn.click();
+      const list = await (async () => {
+        for (let i = 0; i < 60; i += 1) {
+          const el = document.querySelector(".cf-list");
+          if (el) return el;
+          await sleep(100);
+        }
+        return null;
+      })();
+      if (list) result.browsed = [...list.querySelectorAll(".cf-item span")].map((n) => n.textContent);
+      const target = [...document.querySelectorAll(".cf-item")].find((b) => /google-chrome/.test(b.textContent));
+      if (target) {
+        target.click();
+        await sleep(120);
+        result.picked = document.querySelector(".cf-input").value;
+      }
+      const save = [...document.querySelectorAll(".cf-btn")].find((b) => /Save|保存|Guardar/i.test(b.textContent));
+      if (save) save.click();
+      for (let i = 0; i < 60 && result.saved === null; i += 1) {
+        await sleep(120);
+        try {
+          const got = await (await fetch("/__settings")).json();
+          if (got && got.chromePath) result.saved = got;
+        } catch (e) { result.error = String(e); }
+      }
+      result.summary = !!document.querySelector(".cf-ok");
+    } catch (e) {
+      result.error = String(e);
+    }
+    window.__config = result;
+  }
+
   await sleep(300);
   // 记录几何信息，便于机器校验（不是给人看的）
   const root = document.querySelector(".ab-root");
@@ -427,7 +528,8 @@
     overflow: stage ? { sw: stage.scrollWidth, cw: stage.clientWidth, sh: stage.scrollHeight, ch: stage.clientHeight } : null,
     docScroll: { sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight },
     esc: window.__esc || null,
-    escNative: window.__escNative || null
+    escNative: window.__escNative || null,
+    settings: window.__settings || null
   };
   document.body.setAttribute("data-ready", "1");
   window.__ready = true;
