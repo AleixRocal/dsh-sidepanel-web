@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidepanel-web",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "type": "module",
   "description": "A DSH Web plugin that adds a Browser tab to the right sidebar: open any page beside the chat, pick an element, and send the agent your note, its selector and one pinned screenshot, with the full DOM detail in an annotation JSON it can open. Local/dev pages stay interactive through a same-origin proxy, redirects to another path or port included; public pages render in a host Chromium.",
   "icon": "assets/icon.png",
